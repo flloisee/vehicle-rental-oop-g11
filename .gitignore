@@ -1,0 +1,18 @@
+# Maven build output
+target/
+bin/
+
+# Compiled bytecode
+*.class
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.metadata/
+.classpath
+.project
+.settings/
+
+# OS files
+.DS_Store
