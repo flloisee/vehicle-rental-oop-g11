@@ -23,6 +23,7 @@
 | `middle_name` | `varchar(45)` | `NULL` | `YES` | |
 | `last_name` | `varchar(45)` | `NULL` | `NO` | |
 | `suffix` | `varchar(45)` | `NULL` | `YES` | |
+| `email` | `varchar(100)` | `NULL` | `NO` | |
 | `password` | `varchar(97)` | `NULL` | `NO` | |
 
 #### `Vehicles`
@@ -32,9 +33,9 @@
 | `brand` | `varchar(45)` | `NULL` | `NO` | |
 | `model` | `varchar(45)` | `NULL` | `NO` | |
 | `type` | `varchar(45)` | `NULL` | `NO` | |
-| `plate_number` | `varchar(20)` | `NULL` | `NO` | |
+| `plate_number` | `varchar(7)` | `NULL` | `NO` | |
 | `daily_rate` | `decimal(10,2)` | `NULL` | `NO` | |
-| `status` | `varchar(20)` | `'Available'` | `NO` | |
+| `status` | `enum('Available', 'Maintenance', 'Cleaning', 'Out of Service', 'Rented', 'Reserved')` | `'Available'` | `NO` | |
 
 #### `Rentals`
 | Column | Type | Default Value | Nullable | Extra |
@@ -43,6 +44,7 @@
 | `customerID` | `varchar(36)` | `NULL` | `NO` | |
 | `vehicleID` | `int` | `NULL` | `NO` | |
 | `rental_date` | `date` | `NULL` | `NO` | |
+| `planned_return_date` | `date` | `NULL` | `NO` | |
 | `return_date` | `date` | `NULL` | `YES` | |
 | `total_cost` | `decimal(10,2)` | `NULL` | `NO` | |
 
