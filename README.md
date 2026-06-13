@@ -92,9 +92,9 @@
 ## Error Handling Strategy
 `RentalSystemException` handles domain errors (e.g., `VehicleUnavailableException`). A GUI handler catches these to trigger `JOptionPane` alerts, reducing `try-catch` boilerplate.
 
-## Project Structure (Proposed)
+## Project Structure
 ```text
-src/com/vehicle/rental/g11/
+com.vehicle.rental.g11/src/com/vehicle/rental/g11/
 ├── Main.java                    # Application entry point
 ├── model/                       # OOP entities
 │   ├── Vehicle.java             # Abstract class
