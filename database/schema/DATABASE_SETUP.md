@@ -1,13 +1,13 @@
-# 🗄 Database Setup Guide
+# Database Setup Guide
 
 This guide provides instructions on how to implement the `vehicle_rental_g11_oop.sql` schema in your MySQL server.
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **MySQL Server** installed and running (Version 8.0 or higher recommended).
 - A MySQL client (MySQL Shell, MySQL Workbench, phpMyAdmin, etc.).
 
-## 🚀 Implementation Methods
+## Implementation Methods
 
 ### Method 1: Using MySQL Command Line (CLI)
 
@@ -29,7 +29,7 @@ This guide provides instructions on how to implement the `vehicle_rental_g11_oop
 3. Select the `vehicle_rental_g11_oop.sql` file.
 4. Click the **Execute (Lightning Bolt)** icon to run the script.
 
-## ✅ Verification
+## Verification
 
 To ensure the database was created successfully, run the following commands in your MySQL client:
 
