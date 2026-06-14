@@ -1,5 +1,321 @@
 package com.vehicle.rental.g11.gui;
 
-public class VehicleFrame {
+import com.vehicle.rental.g11.dao.VehicleDAO;
+import com.vehicle.rental.g11.exception.RentalSystemException;
+import com.vehicle.rental.g11.model.Vehicle;
+import com.vehicle.rental.g11.model.VehicleFactory;
+import com.vehicle.rental.g11.model.VehicleStatus;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class VehicleFrame extends JFrame {
+
+    private JTable vehicleTable;
+    private DefaultTableModel tableModel;
+    private VehicleDAO vehicleDAO;
+
+    // Form fields
+    private JTextField brandField, modelField, plateField, rateField;
+    private JComboBox<String> typeBox;
+    private JComboBox<VehicleStatus> statusBox;
+    private JButton addButton, updateButton, clearButton;
+
+    private int selectedVehicleID = -1; // -1 means no row selected
+
+    public VehicleFrame() {
+        vehicleDAO = new VehicleDAO();
+
+        setTitle("Vehicle Management");
+        setSize(900, 600);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
+
+        add(buildFormPanel(), BorderLayout.NORTH);
+        add(buildTablePanel(), BorderLayout.CENTER);
+        add(buildButtonPanel(), BorderLayout.SOUTH);
+
+        loadVehicles();
+        setVisible(true);
+    }
+
+    // -------------------------------------------------------
+    // FORM PANEL (top) - input fields
+    // -------------------------------------------------------
+    private JPanel buildFormPanel() {
+        JPanel panel = new JPanel(new GridLayout(3, 4, 8, 8));
+        panel.setBorder(BorderFactory.createTitledBorder("Vehicle Details"));
+
+        panel.add(new JLabel("Brand:"));
+        brandField = new JTextField();
+        panel.add(brandField);
+
+        panel.add(new JLabel("Model:"));
+        modelField = new JTextField();
+        panel.add(modelField);
+
+        panel.add(new JLabel("Type:"));
+        typeBox = new JComboBox<>(new String[]{"Car", "Motorcycle", "Truck"});
+        panel.add(typeBox);
+
+        panel.add(new JLabel("Plate Number (max 7):"));
+        plateField = new JTextField();
+        panel.add(plateField);
+
+        panel.add(new JLabel("Daily Rate:"));
+        rateField = new JTextField();
+        panel.add(rateField);
+
+        panel.add(new JLabel("Status:"));
+        statusBox = new JComboBox<>(VehicleStatus.values());
+        panel.add(statusBox);
+
+        return panel;
+    }
+
+    // -------------------------------------------------------
+    // TABLE PANEL (middle) - shows all vehicles
+    // -------------------------------------------------------
+    private JScrollPane buildTablePanel() {
+        String[] columns = {"ID", "Brand", "Model", "Type", "Plate", "Daily Rate", "Status"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false; // table is read-only, edit via form
+            }
+        };
+
+        vehicleTable = new JTable(tableModel);
+        vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // When a row is clicked, load it into the form for editing
+        vehicleTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                loadSelectedRowIntoForm();
+            }
+        });
+
+        return new JScrollPane(vehicleTable);
+    }
+
+    // -------------------------------------------------------
+    // BUTTON PANEL (bottom)
+    // -------------------------------------------------------
+    private JPanel buildButtonPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
+        addButton = new JButton("Add Vehicle");
+        updateButton = new JButton("Update Vehicle");
+        clearButton = new JButton("Clear Form");
+
+        addButton.addActionListener(e -> addVehicle());
+        updateButton.addActionListener(e -> updateVehicle());
+        clearButton.addActionListener(e -> clearForm());
+
+        panel.add(addButton);
+        panel.add(updateButton);
+        panel.add(clearButton);
+
+        return panel;
+    }
+
+    // -------------------------------------------------------
+    // LOAD ALL VEHICLES INTO TABLE
+    // -------------------------------------------------------
+    private void loadVehicles() {
+        tableModel.setRowCount(0); // clear existing rows
+
+        String sql = "SELECT * FROM Vehicles ORDER BY vehicleID ASC";
+
+        try (Connection conn = com.vehicle.rental.g11.db.DatabaseConnection
+                                   .getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                tableModel.addRow(new Object[]{
+                    rs.getInt("vehicleID"),
+                    rs.getString("brand"),
+                    rs.getString("model"),
+                    rs.getString("type"),
+                    rs.getString("plate_number"),
+                    rs.getDouble("daily_rate"),
+                    rs.getString("status")
+                });
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load vehicles: " + e.getMessage(),
+                "Database Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // -------------------------------------------------------
+    // LOAD SELECTED ROW INTO FORM
+    // -------------------------------------------------------
+    private void loadSelectedRowIntoForm() {
+        int row = vehicleTable.getSelectedRow();
+        if (row == -1) return;
+
+        selectedVehicleID = (int) tableModel.getValueAt(row, 0);
+        brandField.setText((String) tableModel.getValueAt(row, 1));
+        modelField.setText((String) tableModel.getValueAt(row, 2));
+        typeBox.setSelectedItem(tableModel.getValueAt(row, 3));
+        plateField.setText((String) tableModel.getValueAt(row, 4));
+        rateField.setText(String.valueOf(tableModel.getValueAt(row, 5)));
+
+        String statusStr = (String) tableModel.getValueAt(row, 6);
+        statusBox.setSelectedItem(VehicleStatus.fromDbValue(statusStr));
+    }
+
+    // -------------------------------------------------------
+    // ADD VEHICLE
+    // -------------------------------------------------------
+    private void addVehicle() {
+        if (!validateFields()) return;
+
+        String plate = plateField.getText().trim();
+
+        if (vehicleDAO.plateExists(plate, -1)) {
+            JOptionPane.showMessageDialog(this,
+                "Plate number already exists.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            Vehicle v = VehicleFactory.createVehicle(
+                (String) typeBox.getSelectedItem(),
+                0,
+                brandField.getText().trim(),
+                modelField.getText().trim(),
+                plate,
+                Double.parseDouble(rateField.getText().trim()),
+                (VehicleStatus) statusBox.getSelectedItem()
+            );
+
+            boolean success = vehicleDAO.addVehicle(v);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Vehicle added successfully!");
+                clearForm();
+                loadVehicles();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Failed to add vehicle.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // -------------------------------------------------------
+    // UPDATE VEHICLE
+    // -------------------------------------------------------
+    private void updateVehicle() {
+        if (selectedVehicleID == -1) {
+            JOptionPane.showMessageDialog(this,
+                "Please select a vehicle from the table first.",
+                "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!validateFields()) return;
+
+        String plate = plateField.getText().trim();
+
+        if (vehicleDAO.plateExists(plate, selectedVehicleID)) {
+            JOptionPane.showMessageDialog(this,
+                "Plate number already used by another vehicle.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            Vehicle v = VehicleFactory.createVehicle(
+                (String) typeBox.getSelectedItem(),
+                selectedVehicleID,
+                brandField.getText().trim(),
+                modelField.getText().trim(),
+                plate,
+                Double.parseDouble(rateField.getText().trim()),
+                (VehicleStatus) statusBox.getSelectedItem()
+            );
+
+            boolean success = vehicleDAO.updateVehicle(v);
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Vehicle updated successfully!");
+                clearForm();
+                loadVehicles();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Failed to update vehicle.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // -------------------------------------------------------
+    // VALIDATION
+    // -------------------------------------------------------
+    private boolean validateFields() {
+        String brand  = brandField.getText().trim();
+        String model  = modelField.getText().trim();
+        String plate  = plateField.getText().trim();
+        String rate   = rateField.getText().trim();
+
+        if (brand.isEmpty() || model.isEmpty() || plate.isEmpty() || rate.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "All fields are required.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        if (plate.length() > 7) {
+            JOptionPane.showMessageDialog(this,
+                "Plate number must be 7 characters or fewer.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        try {
+            double r = Double.parseDouble(rate);
+            if (r <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this,
+                "Daily rate must be a positive number.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
+
+    // -------------------------------------------------------
+    // CLEAR FORM
+    // -------------------------------------------------------
+    private void clearForm() {
+        selectedVehicleID = -1;
+        brandField.setText("");
+        modelField.setText("");
+        plateField.setText("");
+        rateField.setText("");
+        typeBox.setSelectedIndex(0);
+        statusBox.setSelectedIndex(0);
+        vehicleTable.clearSelection();
+    }
 }
