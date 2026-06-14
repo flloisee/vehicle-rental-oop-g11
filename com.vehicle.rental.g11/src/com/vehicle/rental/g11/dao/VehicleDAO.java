@@ -1,13 +1,13 @@
 package com.vehicle.rental.g11.dao;
 
-import com.vehicle.rental.g11.db.DatabaseConnection;
-import com.vehicle.rental.g11.model.Vehicle;
-import com.vehicle.rental.g11.model.VehicleStatus;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.vehicle.rental.g11.db.DatabaseConnection;
+import com.vehicle.rental.g11.model.Vehicle;
+import com.vehicle.rental.g11.model.VehicleStatus;
 
 public class VehicleDAO {
 
