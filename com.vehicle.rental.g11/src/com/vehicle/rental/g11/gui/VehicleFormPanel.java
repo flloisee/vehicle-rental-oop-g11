@@ -1,6 +1,7 @@
 package com.vehicle.rental.g11.gui;
 
 import com.vehicle.rental.g11.dao.VehicleDAO;
+import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Vehicle;
 import com.vehicle.rental.g11.model.VehicleFactory;
 import com.vehicle.rental.g11.model.VehicleStatus;
@@ -105,13 +106,24 @@ public class VehicleFormPanel extends JPanel {
 
         // ---- ADD MODE ----
         if (editingVehicle == null) {
-            if (vehicleDAO.plateExists(plate, -1)) {
-                JOptionPane.showMessageDialog(this, "Plate number already exists.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+            try {
+                if (vehicleDAO.plateExists(plate, -1)) {
+                    JOptionPane.showMessageDialog(this, "Plate number already exists.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            } catch (RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Failed to validate plate number: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             Vehicle newVehicle = VehicleFactory.createVehicle(type, 0, brand, model, plate, dailyRate, status);
-            boolean success = vehicleDAO.addVehicle(newVehicle);
+            boolean success;
+            try {
+                success = vehicleDAO.addVehicle(newVehicle);
+            } catch (RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Failed to add vehicle: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             if (success) {
                 JOptionPane.showMessageDialog(this, "Vehicle added successfully!");
@@ -122,13 +134,24 @@ public class VehicleFormPanel extends JPanel {
 
         // ---- UPDATE MODE ----
         } else {
-            if (vehicleDAO.plateExists(plate, editingVehicle.getVehicleID())) {
-                JOptionPane.showMessageDialog(this, "Plate number already used by another vehicle.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+            try {
+                if (vehicleDAO.plateExists(plate, editingVehicle.getVehicleID())) {
+                    JOptionPane.showMessageDialog(this, "Plate number already used by another vehicle.", "Validation Error", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            } catch (RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Failed to validate plate number: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             Vehicle updatedVehicle = VehicleFactory.createVehicle(type, editingVehicle.getVehicleID(), brand, model, plate, dailyRate, status);
-            boolean success = vehicleDAO.updateVehicle(updatedVehicle);
+            boolean success;
+            try {
+                success = vehicleDAO.updateVehicle(updatedVehicle);
+            } catch (com.vehicle.rental.g11.exception.RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Failed to update vehicle: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             if (success) {
                 JOptionPane.showMessageDialog(this, "Vehicle updated successfully!");

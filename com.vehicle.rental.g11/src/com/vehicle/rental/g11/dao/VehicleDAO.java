@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import com.vehicle.rental.g11.exception.RentalSystemException;
 
 import com.vehicle.rental.g11.db.DatabaseConnection;
 import com.vehicle.rental.g11.model.Vehicle;
@@ -11,12 +12,12 @@ import com.vehicle.rental.g11.model.VehicleStatus;
 
 public class VehicleDAO {
 
-    private Connection getConn() {
+    private Connection getConn() throws com.vehicle.rental.g11.exception.RentalSystemException {
         return DatabaseConnection.getInstance().getConnection();
     }
 
     // ----------- ADD -----------
-    public boolean addVehicle(Vehicle vehicle) {
+    public boolean addVehicle(Vehicle vehicle) throws RentalSystemException {
         String sql = "INSERT INTO Vehicles (brand, model, type, plate_number, daily_rate, status) "
                     + "VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -32,13 +33,13 @@ public class VehicleDAO {
             return rows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            // Wrap the SQL error in your custom exception
+            throw new RentalSystemException("Failed to add vehicle: " + e.getMessage(), e);
         }
     }
 
     // ----------- UPDATE -----------
-    public boolean updateVehicle(Vehicle vehicle) {
+    public boolean updateVehicle(Vehicle vehicle) throws com.vehicle.rental.g11.exception.RentalSystemException {
         String sql = "UPDATE Vehicles SET brand = ?, model = ?, type = ?, plate_number = ?, "
                     + "daily_rate = ?, status = ? WHERE vehicleID = ?";
 
@@ -55,13 +56,12 @@ public class VehicleDAO {
             return rows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to update vehicle: " + e.getMessage(), e);
         }
     }
 
     // ----------- Check if plate number exists (validation helper) -----------
-    public boolean plateExists(String plateNumber, int excludeVehicleID) {
+    public boolean plateExists(String plateNumber, int excludeVehicleID) throws com.vehicle.rental.g11.exception.RentalSystemException {
         String sql = "SELECT vehicleID FROM Vehicles WHERE plate_number = ? AND vehicleID != ?";
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
@@ -71,13 +71,12 @@ public class VehicleDAO {
             return rs.next();
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to check plate existence: " + e.getMessage(), e);
         }
     }
 
     // ----------- Get single vehicle by ID (useful for loading into Update form) -----------
-    public Vehicle getVehicleById(int vehicleID) {
+    public Vehicle getVehicleById(int vehicleID) throws com.vehicle.rental.g11.exception.RentalSystemException {
         String sql = "SELECT * FROM Vehicles WHERE vehicleID = ?";
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
@@ -99,8 +98,7 @@ public class VehicleDAO {
             return null;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to get vehicle by ID: " + e.getMessage(), e);
         }
     }
 }

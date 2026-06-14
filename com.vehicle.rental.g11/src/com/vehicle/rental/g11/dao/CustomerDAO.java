@@ -1,6 +1,7 @@
 package com.vehicle.rental.g11.dao;
 
 import com.vehicle.rental.g11.db.DatabaseConnection;
+import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Customer;
 import com.vehicle.rental.g11.service.PasswordUtil;
 
@@ -11,12 +12,12 @@ import java.util.UUID;
 
 public class CustomerDAO {
 
-    private Connection getConn() {
+    private Connection getConn() throws RentalSystemException {
         return DatabaseConnection.getInstance().getConnection();
     }
 
     // ----------- ADD -----------
-    public boolean addCustomer(Customer customer, String plainPassword) {
+    public boolean addCustomer(Customer customer, String plainPassword) throws RentalSystemException {
         String sql = "INSERT INTO Customers (customerID, first_name, middle_name, last_name, suffix, email, password) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -40,13 +41,12 @@ public class CustomerDAO {
             return rows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RentalSystemException("Failed to add customer: " + e.getMessage(), e);
         }
     }
 
     // ----------- UPDATE (no password change) -----------
-    public boolean updateCustomer(Customer customer) {
+    public boolean updateCustomer(Customer customer) throws RentalSystemException {
         String sql = "UPDATE Customers SET first_name = ?, middle_name = ?, last_name = ?, suffix = ?, email = ?  "
                     + "WHERE customerID = ?";
 
@@ -62,13 +62,12 @@ public class CustomerDAO {
             return rows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RentalSystemException("Failed to update customer: " + e.getMessage(), e);
         }
     }
 
     // ----------- UPDATE PASSWORD (Admin Recovery) -----------
-    public boolean updatePassword(String customerID, String newPlainPassword) {
+    public boolean updatePassword(String customerID, String newPlainPassword) throws RentalSystemException {
         String sql = "UPDATE Customers SET password = ? WHERE customerID = ?";
         String hashedPassword = PasswordUtil.hashPassword(newPlainPassword);
 
@@ -80,8 +79,7 @@ public class CustomerDAO {
             return rows > 0;
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new RentalSystemException("Failed to update customer password: " + e.getMessage(), e);
         }
     }
 }

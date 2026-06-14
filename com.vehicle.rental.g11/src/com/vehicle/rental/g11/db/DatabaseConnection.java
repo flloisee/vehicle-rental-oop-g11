@@ -3,6 +3,7 @@ package com.vehicle.rental.g11.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import com.vehicle.rental.g11.exception.RentalSystemException;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;
@@ -23,28 +24,28 @@ public class DatabaseConnection {
     private static final String USER = dotenv.get("DB_USER", "root");
 
     private static final String PASSWORD = dotenv.get("DB_PASSWORD", "");
-    private DatabaseConnection() {
+    private DatabaseConnection() throws RentalSystemException {
         try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RentalSystemException("Failed to establish database connection: " + e.getMessage(), e);
         }
     }
 
-    public static DatabaseConnection getInstance() {
+    public static DatabaseConnection getInstance() throws RentalSystemException {
         if (instance == null) {
             instance = new DatabaseConnection();
         }
         return instance;
     }
 
-    public Connection getConnection() {
+    public Connection getConnection() throws RentalSystemException {
         try {
             if (connection == null || connection.isClosed()) {
                 connection = DriverManager.getConnection(URL, USER, PASSWORD);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RentalSystemException("Failed to get database connection: " + e.getMessage(), e);
         }
         return connection;
     }
