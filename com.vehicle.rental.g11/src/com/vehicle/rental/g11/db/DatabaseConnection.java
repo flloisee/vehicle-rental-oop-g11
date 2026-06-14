@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import com.vehicle.rental.g11.exception.RentalSystemException;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class DatabaseConnection {
     private static DatabaseConnection instance;

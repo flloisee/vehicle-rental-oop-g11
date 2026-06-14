@@ -25,15 +25,9 @@ public class LoginFrame extends JFrame {
     }
 
     private JPanel buildHeader() {
-        JPanel panel = new JPanel();
-        panel.setBackground(new Color(30, 30, 60));
-        panel.setPadding(new Insets(16, 0, 16, 0));
-
         JLabel title = new JLabel("🚗 Vehicle Rental System");
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Arial", Font.BOLD, 18));
-        panel.add(title);
-
         JLabel sub = new JLabel("G11 — Please log in to continue");
         sub.setForeground(new Color(180, 180, 220));
         sub.setFont(new Font("Arial", Font.PLAIN, 12));

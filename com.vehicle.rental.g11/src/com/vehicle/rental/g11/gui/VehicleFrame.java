@@ -149,7 +149,7 @@ public class VehicleFrame extends JFrame {
                 });
             }
 
-        } catch (SQLException e) {
+        } catch (SQLException | RentalSystemException e) {
             JOptionPane.showMessageDialog(this,
                 "Failed to load vehicles: " + e.getMessage(),
                 "Database Error", JOptionPane.ERROR_MESSAGE);
@@ -182,14 +182,14 @@ public class VehicleFrame extends JFrame {
 
         String plate = plateField.getText().trim();
 
-        if (vehicleDAO.plateExists(plate, -1)) {
-            JOptionPane.showMessageDialog(this,
-                "Plate number already exists.",
-                "Validation Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         try {
+            if (vehicleDAO.plateExists(plate, -1)) {
+                JOptionPane.showMessageDialog(this,
+                    "Plate number already exists.",
+                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             Vehicle v = VehicleFactory.createVehicle(
                 (String) typeBox.getSelectedItem(),
                 0,
@@ -233,14 +233,14 @@ public class VehicleFrame extends JFrame {
 
         String plate = plateField.getText().trim();
 
-        if (vehicleDAO.plateExists(plate, selectedVehicleID)) {
-            JOptionPane.showMessageDialog(this,
-                "Plate number already used by another vehicle.",
-                "Validation Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         try {
+            if (vehicleDAO.plateExists(plate, selectedVehicleID)) {
+                JOptionPane.showMessageDialog(this,
+                    "Plate number already used by another vehicle.",
+                    "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             Vehicle v = VehicleFactory.createVehicle(
                 (String) typeBox.getSelectedItem(),
                 selectedVehicleID,
