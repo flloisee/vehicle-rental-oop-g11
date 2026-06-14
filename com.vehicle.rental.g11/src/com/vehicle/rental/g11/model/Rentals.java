@@ -11,7 +11,7 @@ public class Rentals {
     private LocalDate returnDate; // nullable - null means not yet returned
     private double totalCost;
 
-    public Rental(int rentalID, String customerID, int vehicleID, LocalDate rentalDate,
+    public Rentals(int rentalID, String customerID, int vehicleID, LocalDate rentalDate,
                    LocalDate plannedReturnDate, LocalDate returnDate, double totalCost) {
         this.rentalID = rentalID;
         this.customerID = customerID;
