@@ -48,7 +48,7 @@
 | `return_date` | `date` | `NULL` | `YES` | |
 | `total_cost` | `decimal(10,2)` | `NULL` | `NO` | |
 
-- [ ] **Class Hierarchy (UML)**
+- [X] **Class Hierarchy (UML)**
   - **Abstraction:** `abstract class Vehicle`
   - **Inheritance:** `Car`, `Motorcycle`, `Truck` $\rightarrow$ `Vehicle`
   - **Encapsulation:** Private attributes with Getters/Setters
@@ -56,32 +56,35 @@
 
 ### Phase 2: Infrastructure & Security
 - [X] **Dependencies** (`argon2-jvm`, `mysql-connector-j`, `junit-jupiter`)
-- [ ] **Security:** `PasswordUtil` class (Argon2id)
-- [ ] **Database:** Singleton `DatabaseConnection` class
-- [ ] **Login Module**: User authentication & validation logic
+- [X] **Security:** `PasswordUtil` class (Argon2id)
+- [X] **Database:** Singleton `DatabaseConnection` class
+- [X] **Login Module**: User authentication & validation logic
 
 ### Phase 3: Core Management (CRUD)
-- [ ] **DAO Pattern:** `CustomerDAO`, `VehicleDAO`, `RentalDAO`
-- [ ] **UUID Management:** `java.util.UUID` for customer identity
-- [ ] **Add Record Module**: Field validation & database insertion
-- [ ] **View Records Module**: Data retrieval & table display
+- [X] **DAO Pattern:** `CustomerDAO`, `VehicleDAO`, `RentalDAO`
+- [X] **UUID Management:** `java.util.UUID` for customer identity
+- [X] **Add Record Module**: Field validation & database insertion
+- [x] **View Records Module**: Data retrieval & table display
 - [ ] **Search Record Module**: Query-based record lookup
-- [ ] **Update Record Module**: Record verification & modification
+- [X] **Update Record Module**: Record verification & modification
 - [ ] **Delete Record Module**: Confirmation-based record removal
 
 ### Phase 4: Analysis & Reporting
-- [ ] **Rental Engine**: Logic for availability and cost calculation
-- [ ] **Report Generation Module**: Revenue and rental statistics
+- [x] **Rental Engine**: Logic for availability and cost calculation
+- [X] **Report Generation Module**: Revenue and rental statistics
 
 ### Phase 5: System Integration & GUI (`javax.swing`)
-- [ ] **Main Menu Module**: Central navigation hub
-- [ ] **GUI Components**: `JFrame` dashboards, `JTextField` forms, and `JOptionPane` feedback
-- [ ] **Navigation Flow**: Module transitions
+- [X] **Main Menu Module**: Central navigation hub
+- [X] **GUI Components**: `JFrame` dashboards, `JTextField` forms, and `JOptionPane` feedback
+- [X] **Navigation Flow**: Module transitions
 
 ### Phase 6: Testing & Finalization
 - [ ] **Testing:** `JUnit 5` for logic and security verification
-- [ ] **Robustness:** `try-catch` error handling & input validation
+- [X] **Robustness:** `try-catch` error handling & input validation
 - [ ] **Documentation:** Final PDF (ERD, UML, Flowcharts, Screenshots)
+
+## Project Progress
+![Progress](https://progress-bar.dev/81/)
 
 ## Task Delegation
 - **Carl**: Login Module, Main Menu Module
