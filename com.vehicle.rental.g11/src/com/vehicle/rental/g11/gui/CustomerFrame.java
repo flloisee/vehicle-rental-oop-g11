@@ -114,15 +114,66 @@ public class CustomerFrame extends JFrame {
         // addButton    → CustomerDAO.addCustomer()
         // updateButton → CustomerDAO.updateCustomer()
         // -------------------------------------------------------
-        addButton.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                "Add Customer — to be implemented.",
-                "TODO", JOptionPane.INFORMATION_MESSAGE));
+        addButton.addActionListener(e -> {
+            String fName = firstNameField.getText();
+            String mName = middleNameField.getText();
+            String lName = lastNameField.getText();
+            String suffix = suffixField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
 
-        updateButton.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                "Update Customer — to be implemented.",
-                "TODO", JOptionPane.INFORMATION_MESSAGE));
+            if (fName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "First Name, Email, and Password are required.",
+                                              "Validation Error", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            try {
+                com.vehicle.rental.g11.dao.CustomerDAO dao = new com.vehicle.rental.g11.dao.CustomerDAO();
+                com.vehicle.rental.g11.model.Customer customer = new com.vehicle.rental.g11.model.Customer(
+                    null, fName, mName, lName, suffix, email
+                );
+                if (dao.addCustomer(customer, password)) {
+                    JOptionPane.showMessageDialog(this, "Customer added successfully!");
+                    clearForm();
+                    loadCustomers();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to add customer.");
+                }
+            } catch (com.vehicle.rental.g11.exception.RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Error adding customer: " + ex.getMessage(),
+                                              "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        updateButton.addActionListener(e -> {
+            if (selectedCustomerID == null) {
+                JOptionPane.showMessageDialog(this, "Please select a customer to update.",
+                                              "Selection Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            try {
+                com.vehicle.rental.g11.dao.CustomerDAO dao = new com.vehicle.rental.g11.dao.CustomerDAO();
+                com.vehicle.rental.g11.model.Customer customer = new com.vehicle.rental.g11.model.Customer(
+                    selectedCustomerID,
+                    firstNameField.getText(),
+                    middleNameField.getText(),
+                    lastNameField.getText(),
+                    suffixField.getText(),
+                    emailField.getText()
+                );
+                if (dao.updateCustomer(customer)) {
+                    JOptionPane.showMessageDialog(this, "Customer updated successfully!");
+                    loadCustomers();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to update customer.");
+                }
+            } catch (com.vehicle.rental.g11.exception.RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Error updating customer: " + ex.getMessage(),
+                                              "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         clearButton.addActionListener(e -> clearForm());
 
@@ -135,10 +186,23 @@ public class CustomerFrame extends JFrame {
 
     private void loadCustomers() {
         tableModel.setRowCount(0);
-        // -------------------------------------------------------
-        // TODO (teammate): Replace with CustomerDAO.getAllCustomers()
-        // and populate tableModel rows
-        // -------------------------------------------------------
+        try {
+            com.vehicle.rental.g11.dao.CustomerDAO dao = new com.vehicle.rental.g11.dao.CustomerDAO();
+            java.util.List<com.vehicle.rental.g11.model.Customer> customers = dao.getAllCustomers();
+            for (com.vehicle.rental.g11.model.Customer c : customers) {
+                tableModel.addRow(new Object[]{
+                    c.getCustomerID(),
+                    c.getFirstName(),
+                    c.getMiddleName(),
+                    c.getLastName(),
+                    c.getSuffix(),
+                    c.getEmail()
+                });
+            }
+        } catch (com.vehicle.rental.g11.exception.RentalSystemException e) {
+            JOptionPane.showMessageDialog(this, "Error loading customers: " + e.getMessage(),
+                                          "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void loadSelectedRowIntoForm() {

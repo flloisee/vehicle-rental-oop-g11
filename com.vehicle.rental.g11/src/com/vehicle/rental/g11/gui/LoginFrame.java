@@ -173,6 +173,7 @@ public class LoginFrame extends JFrame {
         panel.add(registerButton, gbc);
 
         registerButton.addActionListener(e -> handleRegistration());
+        regPassword.addActionListener(e -> handleRegistration());
 
         return panel;
     }

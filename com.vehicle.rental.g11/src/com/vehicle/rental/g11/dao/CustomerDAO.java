@@ -8,6 +8,8 @@ import com.vehicle.rental.g11.service.PasswordUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class CustomerDAO {
@@ -80,6 +82,27 @@ public class CustomerDAO {
             throw new RentalSystemException("Error fetching password by email: " + e.getMessage(), e);
         }
         return null;
+    }
+
+    public List<Customer> getAllCustomers() throws RentalSystemException {
+        String sql = "SELECT * FROM Customers";
+        List<Customer> customers = new ArrayList<>();
+        try (PreparedStatement ps = getConn().prepareStatement(sql);
+             var rs = ps.executeQuery()) {
+            while (rs.next()) {
+                customers.add(new Customer(
+                    rs.getString("customerID"),
+                    rs.getString("first_name"),
+                    rs.getString("middle_name"),
+                    rs.getString("last_name"),
+                    rs.getString("suffix"),
+                    rs.getString("email")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RentalSystemException("Error fetching all customers: " + e.getMessage(), e);
+        }
+        return customers;
     }
 
 
