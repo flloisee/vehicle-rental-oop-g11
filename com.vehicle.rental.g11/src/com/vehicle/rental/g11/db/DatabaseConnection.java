@@ -11,11 +11,8 @@ public class DatabaseConnection {
     private Connection connection;
 
     private static final Dotenv dotenv = Dotenv.configure()
-
             .directory(".")
-
             .ignoreIfMissing()
-
             .load();
 
     private static final String URL = dotenv.get("DB_URL",
@@ -24,7 +21,7 @@ public class DatabaseConnection {
 
     private static final String USER = dotenv.get("DB_USER", "root");
 
-    private static final String PASSWORD = dotenv.get("DB_PASSWORD", "");
+    private static final String PASSWORD = dotenv.get("DB_PASSWORD", "your_db_password");
     private DatabaseConnection() throws RentalSystemException {
         try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);

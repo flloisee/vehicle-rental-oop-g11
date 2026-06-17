@@ -19,7 +19,7 @@ public class CustomerDAO {
     // ----------- ADD -----------
     public boolean addCustomer(Customer customer, String plainPassword) throws RentalSystemException {
         String sql = "INSERT INTO Customers (customerID, first_name, middle_name, last_name, suffix, email, password) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                     + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         // Generate UUID if not already set
         if (customer.getCustomerID() == null) {
@@ -35,7 +35,7 @@ public class CustomerDAO {
             ps.setString(4, customer.getLastName());
             ps.setString(5, customer.getSuffix());
             ps.setString(6, customer.getEmail());
-	    ps.setString(7, hashedPassword);
+            ps.setString(7, hashedPassword);
 
             int rows = ps.executeUpdate();
             return rows > 0;
@@ -44,6 +44,44 @@ public class CustomerDAO {
             throw new RentalSystemException("Failed to add customer: " + e.getMessage(), e);
         }
     }
+
+    public Customer getCustomerByEmail(String email) throws RentalSystemException {
+        String sql = "SELECT * FROM Customers WHERE email = ?";
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Customer(
+                        rs.getString("customerID"),
+                        rs.getString("first_name"),
+                        rs.getString("middle_name"),
+                        rs.getString("last_name"),
+                        rs.getString("suffix"),
+                        rs.getString("email")
+                    );
+                }
+            }
+        } catch (SQLException e) {
+            throw new RentalSystemException("Error fetching customer by email: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public String getPasswordByEmail(String email) throws RentalSystemException {
+        String sql = "SELECT password FROM Customers WHERE email = ?";
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("password");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RentalSystemException("Error fetching password by email: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
 
     // ----------- UPDATE (no password change) -----------
     public boolean updateCustomer(Customer customer) throws RentalSystemException {
