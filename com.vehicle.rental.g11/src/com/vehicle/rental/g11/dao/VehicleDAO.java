@@ -78,11 +78,11 @@ public class VehicleDAO {
     // ----------- Get single vehicle by ID (useful for loading into Update form) -----------
     public Vehicle getVehicleById(int vehicleID) throws com.vehicle.rental.g11.exception.RentalSystemException {
         String sql = "SELECT * FROM Vehicles WHERE vehicleID = ?";
-
+ 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
             ps.setInt(1, vehicleID);
             ResultSet rs = ps.executeQuery();
-
+ 
             if (rs.next()) {
                 String type = rs.getString("type");
                 return com.vehicle.rental.g11.model.VehicleFactory.createVehicle(
@@ -96,9 +96,39 @@ public class VehicleDAO {
                 );
             }
             return null;
-
+ 
         } catch (SQLException e) {
             throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to get vehicle by ID: " + e.getMessage(), e);
         }
     }
+
+    public java.util.List<Vehicle> searchVehicles(String query) throws com.vehicle.rental.g11.exception.RentalSystemException {
+        java.util.List<Vehicle> results = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM Vehicles WHERE brand LIKE ? OR model LIKE ? OR plate_number LIKE ?";
+        String wildCardQuery = "%" + query + "%";
+
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setString(1, wildCardQuery);
+            ps.setString(2, wildCardQuery);
+            ps.setString(3, wildCardQuery);
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String type = rs.getString("type");
+                results.add(com.vehicle.rental.g11.model.VehicleFactory.createVehicle(
+                        type,
+                        rs.getInt("vehicleID"),
+                        rs.getString("brand"),
+                        rs.getString("model"),
+                        rs.getString("plate_number"),
+                        rs.getDouble("daily_rate"),
+                        VehicleStatus.fromDbValue(rs.getString("status"))
+                ));
+            }
+        } catch (SQLException e) {
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Search failed: " + e.getMessage(), e);
+        }
+        return results;
+    }
+
 }

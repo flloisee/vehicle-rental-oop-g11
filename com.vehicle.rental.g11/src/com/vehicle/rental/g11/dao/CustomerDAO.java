@@ -86,6 +86,36 @@ public class CustomerDAO {
 
     public List<Customer> getAllCustomers() throws RentalSystemException {
         String sql = "SELECT * FROM Customers";
+        return executeSelect(sql);
+    }
+
+    public List<Customer> searchCustomers(String query) throws RentalSystemException {
+        String sql = "SELECT * FROM Customers WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ?";
+        List<Customer> customers = new ArrayList<>();
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            String searchPattern = "%" + query + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            ps.setString(3, searchPattern);
+            try (var rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    customers.add(new Customer(
+                        rs.getString("customerID"),
+                        rs.getString("first_name"),
+                        rs.getString("middle_name"),
+                        rs.getString("last_name"),
+                        rs.getString("suffix"),
+                        rs.getString("email")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RentalSystemException("Error searching customers: " + e.getMessage(), e);
+        }
+        return customers;
+    }
+
+    private List<Customer> executeSelect(String sql) throws RentalSystemException {
         List<Customer> customers = new ArrayList<>();
         try (PreparedStatement ps = getConn().prepareStatement(sql);
              var rs = ps.executeQuery()) {
@@ -100,7 +130,7 @@ public class CustomerDAO {
                 ));
             }
         } catch (SQLException e) {
-            throw new RentalSystemException("Error fetching all customers: " + e.getMessage(), e);
+            throw new RentalSystemException("Error fetching customers: " + e.getMessage(), e);
         }
         return customers;
     }

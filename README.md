@@ -65,7 +65,7 @@
 - [X] **UUID Management:** `java.util.UUID` for customer identity
 - [X] **Add Record Module**: Field validation & database insertion
 - [x] **View Records Module**: Data retrieval & table display
-- [ ] **Search Record Module**: Query-based record lookup
+- [x] **Search Record Module**: Query-based record lookup
 - [X] **Update Record Module**: Record verification & modification
 - [ ] **Delete Record Module**: Confirmation-based record removal
 

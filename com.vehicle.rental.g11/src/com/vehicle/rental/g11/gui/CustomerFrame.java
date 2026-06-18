@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
+import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,10 +19,19 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
+import com.vehicle.rental.g11.dao.CustomerDAO;
+import com.vehicle.rental.g11.exception.RentalSystemException;
+import com.vehicle.rental.g11.model.Customer;
+import com.vehicle.rental.g11.service.SearchHandler;
+
 public class CustomerFrame extends JFrame {
 
     private JTable customerTable;
     private DefaultTableModel tableModel;
+
+    // Search fields
+    private JTextField searchField;
+    private SearchHandler searchHandler;
 
     // Form fields
     private JTextField firstNameField, middleNameField, lastNameField,
@@ -41,6 +52,7 @@ public class CustomerFrame extends JFrame {
         add(buildTablePanel(), BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
 
+        setupSearchHandler();
         loadCustomers();
         setVisible(true);
     }
@@ -80,7 +92,58 @@ public class CustomerFrame extends JFrame {
         return panel;
     }
 
-    private JScrollPane buildTablePanel() {
+    private JPanel buildSearchPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(new JLabel("Search: "));
+        searchField = new JTextField(20);
+        panel.add(searchField);
+        return panel;
+    }
+
+    private void setupSearchHandler() {
+        searchHandler = new SearchHandler(query -> {
+            if (query == null || query.trim().isEmpty()) {
+                loadCustomers();
+            } else {
+                performSearch(query);
+            }
+        });
+
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            private void updateSearch() {
+                searchHandler.onQueryChanged(searchField.getText());
+            }
+        });
+    }
+
+    private void performSearch(String query) {
+        tableModel.setRowCount(0);
+        try {
+            CustomerDAO dao = new CustomerDAO();
+            List<Customer> results = dao.searchCustomers(query);
+            for (Customer c : results) {
+                tableModel.addRow(new Object[]{
+                    c.getCustomerID(),
+                    c.getFirstName(),
+                    c.getMiddleName(),
+                    c.getLastName(),
+                    c.getSuffix(),
+                    c.getEmail()
+                });
+            }
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this, "Search error: " + e.getMessage(),
+                                           "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private JPanel buildTablePanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.add(buildSearchPanel(), BorderLayout.NORTH);
+
         String[] columns = {"Customer ID", "First Name", "Middle Name",
                             "Last Name", "Suffix", "Email"};
         tableModel = new DefaultTableModel(columns, 0) {
@@ -99,7 +162,8 @@ public class CustomerFrame extends JFrame {
             }
         });
 
-        return new JScrollPane(customerTable);
+        panel.add(new JScrollPane(customerTable), BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel buildButtonPanel() {

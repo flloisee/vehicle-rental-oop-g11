@@ -113,6 +113,26 @@ public class RentalDAO {
         return list;
     }
 
+    public List<Rentals> searchRentals(String query) throws RentalSystemException {
+        List<Rentals> results = new ArrayList<>();
+        String sql = "SELECT * FROM Rentals WHERE customerID LIKE ? OR CAST(vehicleID AS CHAR) LIKE ? OR CAST(rentalID AS CHAR) LIKE ?";
+        String wildCardQuery = "%" + query + "%";
+
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setString(1, wildCardQuery);
+            ps.setString(2, wildCardQuery);
+            ps.setString(3, wildCardQuery);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                results.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            throw new RentalSystemException("Search failed: " + e.getMessage(), e);
+        }
+        return results;
+    }
+
     // ----------- GET BY CUSTOMER -----------
     // Useful for showing a specific customer's rental history
     public List<Rentals> getRentalsByCustomer(String customerID) throws RentalSystemException {

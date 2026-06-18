@@ -4,8 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.util.List;
 
 import javax.swing.BorderFactory;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -17,13 +19,27 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 
+import com.vehicle.rental.g11.dao.RentalDAO;
+import com.vehicle.rental.g11.exception.RentalSystemException;
+import com.vehicle.rental.g11.model.Rentals;
+import com.vehicle.rental.g11.service.SearchHandler;
+
 public class RentalFrame extends JFrame {
+
 
     private JTable rentalTable;
     private DefaultTableModel tableModel;
 
+    // Search fields
+    private JTextField searchField;
+    private SearchHandler searchHandler;
+    private RentalDAO rentalDAO;
+    private com.vehicle.rental.g11.service.RentalEngine rentalEngine;
+
+
     // Form fields
     private JTextField customerIDField, vehicleIDField,
+
                        rentalDateField, plannedReturnDateField,
                        returnDateField, totalCostField;
     private JButton addButton, updateButton, returnButton, clearButton;
@@ -31,6 +47,8 @@ public class RentalFrame extends JFrame {
     private int selectedRentalID = -1;
 
     public RentalFrame() {
+        rentalDAO = new RentalDAO();
+        rentalEngine = new com.vehicle.rental.g11.service.RentalEngine();
         setTitle("Rental Management");
         setSize(1000, 620);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -41,6 +59,7 @@ public class RentalFrame extends JFrame {
         add(buildTablePanel(), BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
 
+        setupSearchHandler();
         loadRentals();
         setVisible(true);
     }
@@ -83,7 +102,58 @@ public class RentalFrame extends JFrame {
         return panel;
     }
 
-    private JScrollPane buildTablePanel() {
+    private JPanel buildSearchPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(new JLabel("Search: "));
+        searchField = new JTextField(20);
+        panel.add(searchField);
+        return panel;
+    }
+
+    private void setupSearchHandler() {
+        searchHandler = new SearchHandler(query -> {
+            if (query == null || query.trim().isEmpty()) {
+                loadRentals();
+            } else {
+                performSearch(query);
+            }
+        });
+
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            private void updateSearch() {
+                searchHandler.onQueryChanged(searchField.getText());
+            }
+        });
+    }
+
+    private void performSearch(String query) {
+        tableModel.setRowCount(0);
+        try {
+            List<Rentals> results = rentalDAO.searchRentals(query);
+            for (Rentals r : results) {
+                tableModel.addRow(new Object[]{
+                    r.getRentalID(),
+                    r.getCustomerID(),
+                    r.getVehicleID(),
+                    r.getRentalDate(),
+                    r.getPlannedReturnDate(),
+                    r.getReturnDate(),
+                    r.getTotalCost()
+                });
+            }
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this, "Search error: " + e.getMessage(),
+                                          "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private JPanel buildTablePanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.add(buildSearchPanel(), BorderLayout.NORTH);
+
         String[] columns = {"Rental ID", "Customer ID", "Vehicle ID",
                             "Rental Date", "Planned Return",
                             "Actual Return", "Total Cost"};
@@ -103,7 +173,8 @@ public class RentalFrame extends JFrame {
             }
         });
 
-        return new JScrollPane(rentalTable);
+        panel.add(new JScrollPane(rentalTable), BorderLayout.CENTER);
+        return panel;
     }
 
     private JPanel buildButtonPanel() {
@@ -115,25 +186,76 @@ public class RentalFrame extends JFrame {
         clearButton  = new JButton("Clear Form");
 
         // -------------------------------------------------------
-        // TODO (teammate): wire to RentalEngine / RentalDAO
-        // addButton    → RentalEngine.startRental()
-        // updateButton → RentalDAO.updateRental()
-        // returnButton → RentalEngine.returnVehicle()
+        // Wire to RentalEngine / RentalDAO
         // -------------------------------------------------------
-        addButton.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                "Add Rental — to be implemented.",
-                "TODO", JOptionPane.INFORMATION_MESSAGE));
+        addButton.addActionListener(e -> {
+            try {
+                String customerID = customerIDField.getText().trim();
+                int vehicleID = Integer.parseInt(vehicleIDField.getText().trim());
+                java.time.LocalDate rDate = java.time.LocalDate.parse(rentalDateField.getText().trim());
+                java.time.LocalDate pDate = java.time.LocalDate.parse(plannedReturnDateField.getText().trim());
 
-        updateButton.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                "Update Rental — to be implemented.",
-                "TODO", JOptionPane.INFORMATION_MESSAGE));
+                if (customerID.isEmpty()) throw new Exception("Customer ID is required.");
 
-        returnButton.addActionListener(e ->
-            JOptionPane.showMessageDialog(this,
-                "Mark as Returned — to be implemented.",
-                "TODO", JOptionPane.INFORMATION_MESSAGE));
+                rentalEngine.startRental(customerID, vehicleID, rDate, pDate);
+                JOptionPane.showMessageDialog(this, "Rental started successfully!");
+                loadRentals();
+                clearForm();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Vehicle ID must be a number.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (java.time.format.DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid date format. Use YYYY-MM-DD.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error starting rental: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        updateButton.addActionListener(e -> {
+            if (selectedRentalID == -1) {
+                JOptionPane.showMessageDialog(this, "Please select a rental to update.", "Selection Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                String customerID = customerIDField.getText().trim();
+                int vehicleID = Integer.parseInt(vehicleIDField.getText().trim());
+                java.time.LocalDate rDate = java.time.LocalDate.parse(rentalDateField.getText().trim());
+                java.time.LocalDate pDate = java.time.LocalDate.parse(plannedReturnDateField.getText().trim());
+                java.time.LocalDate retDate = returnDateField.getText().trim().isEmpty() ? 
+                                            null : java.time.LocalDate.parse(returnDateField.getText().trim());
+                double cost = Double.parseDouble(totalCostField.getText().trim());
+
+                Rentals rental = new Rentals(selectedRentalID, customerID, vehicleID, rDate, pDate, retDate, cost);
+                if (rentalDAO.updateRental(rental)) {
+                    JOptionPane.showMessageDialog(this, "Rental updated successfully!");
+                    loadRentals();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to update rental.");
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error updating rental: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        returnButton.addActionListener(e -> {
+            if (selectedRentalID == -1) {
+                JOptionPane.showMessageDialog(this, "Please select a rental to mark as returned.", "Selection Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                String returnDateStr = returnDateField.getText().trim();
+                if (returnDateStr.isEmpty()) {
+                    returnDateStr = java.time.LocalDate.now().toString();
+                }
+                java.time.LocalDate returnDate = java.time.LocalDate.parse(returnDateStr);
+                
+                rentalEngine.returnVehicle(selectedRentalID, returnDate);
+                JOptionPane.showMessageDialog(this, "Vehicle returned successfully!");
+                loadRentals();
+                clearForm();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error returning vehicle: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         clearButton.addActionListener(e -> clearForm());
 
@@ -147,10 +269,23 @@ public class RentalFrame extends JFrame {
 
     private void loadRentals() {
         tableModel.setRowCount(0);
-        // -------------------------------------------------------
-        // TODO (teammate): Replace with RentalDAO.getAllRentals()
-        // and populate tableModel rows
-        // -------------------------------------------------------
+        try {
+            List<Rentals> rentals = rentalDAO.getAllRentals();
+            for (Rentals r : rentals) {
+                tableModel.addRow(new Object[]{
+                    r.getRentalID(),
+                    r.getCustomerID(),
+                    r.getVehicleID(),
+                    r.getRentalDate(),
+                    r.getPlannedReturnDate(),
+                    r.getReturnDate(),
+                    r.getTotalCost()
+                });
+            }
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this, "Error loading rentals: " + e.getMessage(),
+                                          "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void loadSelectedRowIntoForm() {

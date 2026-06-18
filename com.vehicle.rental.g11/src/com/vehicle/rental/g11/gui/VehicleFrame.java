@@ -5,8 +5,10 @@ import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Vehicle;
 import com.vehicle.rental.g11.model.VehicleFactory;
 import com.vehicle.rental.g11.model.VehicleStatus;
-
+import com.vehicle.rental.g11.service.SearchHandler;
+ 
 import javax.swing.*;
+
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
@@ -21,11 +23,14 @@ public class VehicleFrame extends JFrame {
 
     // Form fields
     private JTextField brandField, modelField, plateField, rateField;
+    private JTextField searchField;
     private JComboBox<String> typeBox;
     private JComboBox<VehicleStatus> statusBox;
     private JButton addButton, updateButton, clearButton;
-
+    private SearchHandler searchHandler;
+ 
     private int selectedVehicleID = -1; // -1 means no row selected
+
 
     public VehicleFrame() {
         vehicleDAO = new VehicleDAO();
@@ -39,10 +44,12 @@ public class VehicleFrame extends JFrame {
         add(buildFormPanel(), BorderLayout.NORTH);
         add(buildTablePanel(), BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
-
+ 
+        setupSearchHandler();
         loadVehicles();
         setVisible(true);
     }
+
 
     // -------------------------------------------------------
     // FORM PANEL (top) - input fields
@@ -79,9 +86,42 @@ public class VehicleFrame extends JFrame {
     }
 
     // -------------------------------------------------------
+    // SEARCH PANEL
+    // -------------------------------------------------------
+    private JPanel buildSearchPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(new JLabel("Search: "));
+        searchField = new JTextField(20);
+        panel.add(searchField);
+        return panel;
+    }
+
+    private void setupSearchHandler() {
+        searchHandler = new SearchHandler(query -> {
+            if (query == null || query.trim().isEmpty()) {
+                loadVehicles();
+            } else {
+                performSearch(query);
+            }
+        });
+
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateSearch(); }
+            private void updateSearch() {
+                searchHandler.onQueryChanged(searchField.getText());
+            }
+        });
+    }
+
+    // -------------------------------------------------------
     // TABLE PANEL (middle) - shows all vehicles
     // -------------------------------------------------------
-    private JScrollPane buildTablePanel() {
+    private JPanel buildTablePanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.add(buildSearchPanel(), BorderLayout.NORTH);
+
         String[] columns = {"ID", "Brand", "Model", "Type", "Plate", "Daily Rate", "Status"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -100,7 +140,8 @@ public class VehicleFrame extends JFrame {
             }
         });
 
-        return new JScrollPane(vehicleTable);
+        panel.add(new JScrollPane(vehicleTable), BorderLayout.CENTER);
+        return panel;
     }
 
     // -------------------------------------------------------
@@ -129,14 +170,14 @@ public class VehicleFrame extends JFrame {
     // -------------------------------------------------------
     private void loadVehicles() {
         tableModel.setRowCount(0); // clear existing rows
-
+ 
         String sql = "SELECT * FROM Vehicles ORDER BY vehicleID ASC";
-
+ 
         try (Connection conn = com.vehicle.rental.g11.db.DatabaseConnection
-                                   .getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
+                                    .getInstance().getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql);
+              ResultSet rs = ps.executeQuery()) {
+ 
             while (rs.next()) {
                 tableModel.addRow(new Object[]{
                     rs.getInt("vehicleID"),
@@ -148,13 +189,36 @@ public class VehicleFrame extends JFrame {
                     rs.getString("status")
                 });
             }
-
+ 
         } catch (SQLException | RentalSystemException e) {
             JOptionPane.showMessageDialog(this,
                 "Failed to load vehicles: " + e.getMessage(),
                 "Database Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void performSearch(String query) {
+        tableModel.setRowCount(0);
+        try {
+            List<Vehicle> results = vehicleDAO.searchVehicles(query);
+            for (Vehicle v : results) {
+                tableModel.addRow(new Object[]{
+                    v.getVehicleID(),
+                    v.getBrand(),
+                    v.getModel(),
+                    v.getType(),
+                    v.getPlateNumber(),
+                    v.getDailyRate(),
+                    v.getStatus().getDbValue()
+                });
+            }
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this, 
+                "Search error: " + e.getMessage(), 
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 
     // -------------------------------------------------------
     // LOAD SELECTED ROW INTO FORM
