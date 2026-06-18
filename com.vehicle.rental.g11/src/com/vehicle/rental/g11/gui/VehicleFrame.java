@@ -153,14 +153,20 @@ public class VehicleFrame extends JFrame {
         addButton = new JButton("Add Vehicle");
         updateButton = new JButton("Update Vehicle");
         clearButton = new JButton("Clear Form");
-
+        JButton backButton = new JButton("Back to Main Menu");
+ 
         addButton.addActionListener(e -> addVehicle());
         updateButton.addActionListener(e -> updateVehicle());
         clearButton.addActionListener(e -> clearForm());
-
+        backButton.addActionListener(e -> {
+            dispose();
+            new MainFrame();
+        });
+ 
         panel.add(addButton);
         panel.add(updateButton);
         panel.add(clearButton);
+        panel.add(backButton);
 
         return panel;
     }

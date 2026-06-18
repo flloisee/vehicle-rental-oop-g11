@@ -184,7 +184,8 @@ public class RentalFrame extends JFrame {
         updateButton = new JButton("Update Rental");
         returnButton = new JButton("Mark as Returned");
         clearButton  = new JButton("Clear Form");
-
+        JButton backButton = new JButton("Back to Main Menu");
+ 
         // -------------------------------------------------------
         // Wire to RentalEngine / RentalDAO
         // -------------------------------------------------------
@@ -258,11 +259,16 @@ public class RentalFrame extends JFrame {
         });
 
         clearButton.addActionListener(e -> clearForm());
-
+        backButton.addActionListener(e -> {
+            dispose();
+            new MainFrame();
+        });
+ 
         panel.add(addButton);
         panel.add(updateButton);
         panel.add(returnButton);
         panel.add(clearButton);
+        panel.add(backButton);
 
         return panel;
     }

@@ -172,7 +172,8 @@ public class CustomerFrame extends JFrame {
         addButton    = new JButton("Add Customer");
         updateButton = new JButton("Update Customer");
         clearButton  = new JButton("Clear Form");
-
+        JButton backButton = new JButton("Back to Main Menu");
+ 
         // -------------------------------------------------------
         // TODO (teammate): wire these to CustomerDAO methods
         // addButton    → CustomerDAO.addCustomer()
@@ -240,10 +241,15 @@ public class CustomerFrame extends JFrame {
         });
 
         clearButton.addActionListener(e -> clearForm());
-
+        backButton.addActionListener(e -> {
+            dispose();
+            new MainFrame();
+        });
+ 
         panel.add(addButton);
         panel.add(updateButton);
         panel.add(clearButton);
+        panel.add(backButton);
 
         return panel;
     }

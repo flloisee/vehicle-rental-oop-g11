@@ -105,7 +105,15 @@ public class ReportFrame extends JFrame {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton refreshBtn = new JButton("Refresh Reports");
         refreshBtn.addActionListener(e -> loadReports());
+        
+        JButton backBtn = new JButton("Back to Main Menu");
+        backBtn.addActionListener(e -> {
+            dispose();
+            new MainFrame();
+        });
+        
         panel.add(refreshBtn);
+        panel.add(backBtn);
         return panel;
     }
 

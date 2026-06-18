@@ -35,14 +35,22 @@ public class MainFrame extends JFrame {
     // NAV BUTTONS - each opens its respective Frame
     // -------------------------------------------------------
     private JPanel buildNavPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 3, 20, 20));
+        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 20));
         panel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
+
+        JPanel row1 = new JPanel(new GridLayout(1, 3, 20, 0));
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
 
         JButton vehicleBtn  = makeNavButton("🚗 Vehicles");
         JButton customerBtn = makeNavButton("👤 Customers");
         JButton rentalBtn   = makeNavButton("📋 Rentals");
         JButton reportBtn   = makeNavButton("📊 Reports");
         JButton logoutBtn   = makeNavButton("🔒 Logout");
+
+        // Set preferred size for row 2 buttons to match row 1 style
+        Dimension btnSize = new Dimension(213, 200);
+        reportBtn.setPreferredSize(btnSize);
+        logoutBtn.setPreferredSize(btnSize);
 
         // Vehicle button - your module
         vehicleBtn.addActionListener(e -> new VehicleFrame());
@@ -84,11 +92,15 @@ public class MainFrame extends JFrame {
             new LoginFrame();
         });
 
-        panel.add(vehicleBtn);
-        panel.add(customerBtn);
-        panel.add(rentalBtn);
-        panel.add(reportBtn);
-        panel.add(logoutBtn);
+        row1.add(vehicleBtn);
+        row1.add(customerBtn);
+        row1.add(rentalBtn);
+
+        row2.add(reportBtn);
+        row2.add(logoutBtn);
+
+        panel.add(row1);
+        panel.add(row2);
 
         return panel;
     }
