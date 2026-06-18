@@ -132,10 +132,14 @@ public class RentalEngine {
             throw new RentalSystemException("Return date cannot be before the rental start date.");
         }
 
-        // 4. Mark rental as returned
-        boolean marked = rentalDAO.markAsReturned(rentalID, actualReturnDate);
-        if (!marked) {
-            throw new RentalSystemException("Failed to mark rental as returned.");
+        // 4. Recalculate cost and mark rental as returned
+        double updatedCost = calculateCost(rental.getVehicleID(), rental.getRentalDate(), actualReturnDate);
+        rental.setReturnDate(actualReturnDate);
+        rental.setTotalCost(updatedCost);
+
+        boolean updated = rentalDAO.updateRental(rental);
+        if (!updated) {
+            throw new RentalSystemException("Failed to update rental record with return date and final cost.");
         }
 
         // 5. Set vehicle back to Available
