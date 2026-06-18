@@ -83,8 +83,8 @@
 - [X] **Robustness:** `try-catch` error handling & input validation
 - [ ] **Documentation:** Final PDF (ERD, UML, Flowcharts, Screenshots)
 
-## Project Progress
-![Progress](https://progress-bar.dev/81/)
+### Project Progress
+`[################----]` 81%
 
 ## Task Delegation
 - **Carl**: Login Module, Main Menu Module
