@@ -16,7 +16,10 @@ public class ReportFrame extends JFrame {
     private DefaultTableModel overdueTableModel;
     private RentalEngine rentalEngine;
 
-    public ReportFrame() {
+    private MainFrame mainFrame;
+ 
+    public ReportFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         rentalEngine = new RentalEngine();
 
         setTitle("Reports & Statistics");
@@ -109,7 +112,7 @@ public class ReportFrame extends JFrame {
         JButton backBtn = new JButton("Back to Main Menu");
         backBtn.addActionListener(e -> {
             dispose();
-            new MainFrame();
+            mainFrame.setVisible(true);
         });
         
         panel.add(refreshBtn);

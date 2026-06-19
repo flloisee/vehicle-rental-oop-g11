@@ -50,7 +50,10 @@ public class RentalFrame extends JFrame {
 
     private int selectedRentalID = -1;
 
-    public RentalFrame() {
+    private MainFrame mainFrame;
+ 
+    public RentalFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         rentalDAO = new RentalDAO();
         vehicleDAO = new VehicleDAO();
         customerDAO = new com.vehicle.rental.g11.dao.CustomerDAO();
@@ -411,7 +414,7 @@ public class RentalFrame extends JFrame {
         clearButton.addActionListener(e -> clearForm());
         backButton.addActionListener(e -> {
             dispose();
-            new MainFrame();
+            mainFrame.setVisible(true);
         });
  
         panel.add(addButton);

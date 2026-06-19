@@ -41,7 +41,10 @@ public class CustomerFrame extends JFrame {
 
     private String selectedCustomerID = null;
 
-    public CustomerFrame() {
+    private MainFrame mainFrame;
+ 
+    public CustomerFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         setTitle("Customer Management");
         setSize(950, 600);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -243,7 +246,7 @@ public class CustomerFrame extends JFrame {
         clearButton.addActionListener(e -> clearForm());
         backButton.addActionListener(e -> {
             dispose();
-            new MainFrame();
+            mainFrame.setVisible(true);
         });
  
         panel.add(addButton);

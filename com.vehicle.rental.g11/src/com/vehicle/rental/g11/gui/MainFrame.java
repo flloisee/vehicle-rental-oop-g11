@@ -53,13 +53,18 @@ public class MainFrame extends JFrame {
         logoutBtn.setPreferredSize(btnSize);
 
         // Vehicle button - your module
-        vehicleBtn.addActionListener(e -> new VehicleFrame());
+        vehicleBtn.addActionListener(e -> {
+            setVisible(false);
+            new VehicleFrame(this);
+        });
 
         // Stubs for teammates' modules - open when they build them
         customerBtn.addActionListener(e -> {
             try {
-                new CustomerFrame();
+                setVisible(false);
+                new CustomerFrame(this);
             } catch (Exception ex) {
+                setVisible(true);
                 JOptionPane.showMessageDialog(this,
                     "Customer module not yet available.",
                     "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
@@ -68,8 +73,10 @@ public class MainFrame extends JFrame {
 
         rentalBtn.addActionListener(e -> {
             try {
-                new RentalFrame();
+                setVisible(false);
+                new RentalFrame(this);
             } catch (Exception ex) {
+                setVisible(true);
                 JOptionPane.showMessageDialog(this,
                     "Rental module not yet available.",
                     "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
@@ -78,8 +85,10 @@ public class MainFrame extends JFrame {
 
         reportBtn.addActionListener(e -> {
             try {
-                new ReportFrame();
+                setVisible(false);
+                new ReportFrame(this);
             } catch (Exception ex) {
+                setVisible(true);
                 JOptionPane.showMessageDialog(this,
                     "Report module not yet available.",
                     "Coming Soon", JOptionPane.INFORMATION_MESSAGE);

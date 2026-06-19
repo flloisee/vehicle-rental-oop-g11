@@ -32,7 +32,10 @@ public class VehicleFrame extends JFrame {
     private int selectedVehicleID = -1; // -1 means no row selected
 
 
-    public VehicleFrame() {
+    private MainFrame mainFrame;
+ 
+    public VehicleFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
         vehicleDAO = new VehicleDAO();
 
         setTitle("Vehicle Management");
@@ -160,7 +163,7 @@ public class VehicleFrame extends JFrame {
         clearButton.addActionListener(e -> clearForm());
         backButton.addActionListener(e -> {
             dispose();
-            new MainFrame();
+            mainFrame.setVisible(true);
         });
  
         panel.add(addButton);
