@@ -77,7 +77,11 @@ public class RentalDAO {
     // ----------- GET BY ID -----------
     // Useful for loading a rental into the Update form
     public Rentals getRentalById(int rentalID) throws RentalSystemException {
-        String sql = "SELECT * FROM Rentals WHERE rentalID = ?";
+        String sql = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, v.brand, v.model " +
+                       "FROM Rentals r " +
+                                                 "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                        "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID " +
+                       "WHERE r.rentalID = ?";
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
             ps.setInt(1, rentalID);
@@ -96,7 +100,11 @@ public class RentalDAO {
     // ----------- GET ALL -----------
     // Useful for displaying all rentals in a JTable on the dashboard
     public List<Rentals> getAllRentals() throws RentalSystemException {
-        String sql = "SELECT * FROM Rentals ORDER BY rental_date DESC";
+        String sql = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, v.brand, v.model " +
+                       "FROM Rentals r " +
+                                                 "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                        "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID " +
+                       "ORDER BY r.rental_date DESC";
         List<Rentals> list = new ArrayList<>();
 
         try (PreparedStatement ps = getConn().prepareStatement(sql);
@@ -115,7 +123,11 @@ public class RentalDAO {
 
     public List<Rentals> searchRentals(String query) throws RentalSystemException {
         List<Rentals> results = new ArrayList<>();
-        String sql = "SELECT * FROM Rentals WHERE customerID LIKE ? OR CAST(vehicleID AS CHAR) LIKE ? OR CAST(rentalID AS CHAR) LIKE ?";
+        String sql = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, v.brand, v.model " +
+                       "FROM Rentals r " +
+                                                 "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                        "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID " +
+                       "WHERE r.customerID LIKE ? OR CAST(r.vehicleID AS CHAR) LIKE ? OR CAST(r.rentalID AS CHAR) LIKE ?";
         String wildCardQuery = "%" + query + "%";
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
@@ -136,7 +148,11 @@ public class RentalDAO {
     // ----------- GET BY CUSTOMER -----------
     // Useful for showing a specific customer's rental history
     public List<Rentals> getRentalsByCustomer(String customerID) throws RentalSystemException {
-        String sql = "SELECT * FROM Rentals WHERE customerID = ? ORDER BY rental_date DESC";
+        String sql = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, v.brand, v.model " +
+                       "FROM Rentals r " +
+                                                 "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                        "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID " +
+                       "WHERE r.customerID = ? ORDER BY r.rental_date DESC";
         List<Rentals> list = new ArrayList<>();
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
@@ -157,7 +173,11 @@ public class RentalDAO {
     // ----------- GET ACTIVE RENTALS -----------
     // Active = return_date is NULL (vehicle not yet returned)
     public List<Rentals> getActiveRentals() throws RentalSystemException {
-        String sql = "SELECT * FROM Rentals WHERE return_date IS NULL ORDER BY planned_return_date ASC";
+        String sql = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, v.brand, v.model " +
+                       "FROM Rentals r " +
+                                                 "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                        "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID " +
+                       "WHERE r.return_date IS NULL ORDER BY r.planned_return_date ASC";
         List<Rentals> list = new ArrayList<>();
 
         try (PreparedStatement ps = getConn().prepareStatement(sql);
@@ -193,14 +213,27 @@ public class RentalDAO {
 
     // ----------- HELPER: map ResultSet row to Rentals object -----------
     private Rentals mapRow(ResultSet rs) throws SQLException {
-        // return_date can be null in DB, handle that safely
         Date returnDateRaw = rs.getDate("return_date");
         LocalDate returnDate = (returnDateRaw != null) ? returnDateRaw.toLocalDate() : null;
+
+        String customerName = rs.getString("customerName");
+        String firstName = rs.getString("first_name");
+        String middleName = rs.getString("middle_name");
+        String lastName = rs.getString("last_name");
+        String suffix = rs.getString("suffix");
+        String vehicleBrand = rs.getString("brand");
+        String vehicleModel = rs.getString("model");
 
         return new Rentals(
             rs.getInt("rentalID"),
             rs.getString("customerID"),
+            firstName,
+            middleName,
+            lastName,
+            suffix,
             rs.getInt("vehicleID"),
+            vehicleBrand != null ? vehicleBrand : "Unknown Brand",
+            vehicleModel != null ? vehicleModel : "Unknown Model",
             rs.getDate("rental_date").toLocalDate(),
             rs.getDate("planned_return_date").toLocalDate(),
             returnDate,

@@ -90,13 +90,24 @@ public class CustomerDAO {
     }
 
     public List<Customer> searchCustomers(String query) throws RentalSystemException {
-        String sql = "SELECT * FROM Customers WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ?";
+        String[] keywords = query.trim().split("\\s+");
+        StringBuilder sql = new StringBuilder("SELECT * FROM Customers WHERE 1=1");
+        
+        for (String keyword : keywords) {
+            sql.append(" AND (first_name LIKE ? OR middle_name LIKE ? OR last_name LIKE ? OR email LIKE ?)");
+        }
+
         List<Customer> customers = new ArrayList<>();
-        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            String searchPattern = "%" + query + "%";
-            ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
-            ps.setString(3, searchPattern);
+        try (PreparedStatement ps = getConn().prepareStatement(sql.toString())) {
+            String searchPattern = "%" + query + "%"; // This was old, I need to use keyword
+            int paramIndex = 1;
+            for (String keyword : keywords) {
+                String pattern = "%" + keyword + "%";
+                ps.setString(paramIndex++, pattern);
+                ps.setString(paramIndex++, pattern);
+                ps.setString(paramIndex++, pattern);
+                ps.setString(paramIndex++, pattern);
+            }
             try (var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     customers.add(new Customer(

@@ -103,14 +103,29 @@ public class VehicleDAO {
     }
 
     public java.util.List<Vehicle> searchVehicles(String query) throws com.vehicle.rental.g11.exception.RentalSystemException {
-        java.util.List<Vehicle> results = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM Vehicles WHERE brand LIKE ? OR model LIKE ? OR plate_number LIKE ?";
-        String wildCardQuery = "%" + query + "%";
+        return searchVehicles(query, "");
+    }
 
-        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            ps.setString(1, wildCardQuery);
-            ps.setString(2, wildCardQuery);
-            ps.setString(3, wildCardQuery);
+    public java.util.List<Vehicle> searchVehicles(String brandModel, String plateNumber) throws com.vehicle.rental.g11.exception.RentalSystemException {
+        java.util.List<Vehicle> results = new java.util.ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM Vehicles WHERE 1=1");
+        java.util.List<String> params = new java.util.ArrayList<>();
+
+        if (brandModel != null && !brandModel.trim().isEmpty()) {
+            sql.append(" AND (brand LIKE ? OR model LIKE ?)");
+            String wildCard = "%" + brandModel.trim() + "%";
+            params.add(wildCard);
+            params.add(wildCard);
+        }
+        if (plateNumber != null && !plateNumber.trim().isEmpty()) {
+            sql.append(" AND plate_number LIKE ?");
+            params.add("%" + plateNumber.trim() + "%");
+        }
+
+        try (PreparedStatement ps = getConn().prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
             
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -130,5 +145,6 @@ public class VehicleDAO {
         }
         return results;
     }
+
 
 }

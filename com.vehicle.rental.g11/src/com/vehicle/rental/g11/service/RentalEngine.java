@@ -42,15 +42,21 @@ public class RentalEngine {
 
     // Calculates rental cost using the vehicle's own polymorphic method
     // Days are calculated from rentalDate to plannedReturnDate (inclusive)
-    public double calculateCost(int vehicleID, LocalDate rentalDate, LocalDate plannedReturnDate)
+    public double calculateCost(int vehicleID, LocalDate rentalDate, LocalDate plannedReturnDate, LocalDate actualReturnDate)
             throws RentalSystemException {
 
-        if (rentalDate == null || plannedReturnDate == null) {
-            throw new RentalSystemException("Rental date and planned return date cannot be null.");
+        if (rentalDate == null) {
+            throw new RentalSystemException("Rental date cannot be null.");
         }
 
-        if (!plannedReturnDate.isAfter(rentalDate)) {
-            throw new RentalSystemException("Planned return date must be after rental date.");
+        LocalDate endDate = (actualReturnDate != null) ? actualReturnDate : plannedReturnDate;
+
+        if (endDate == null) {
+            throw new RentalSystemException("End date (planned or actual return date) cannot be null.");
+        }
+
+        if (!endDate.isAfter(rentalDate)) {
+            throw new RentalSystemException("Return date must be after rental date.");
         }
 
         Vehicle vehicle = vehicleDAO.getVehicleById(vehicleID);
@@ -59,10 +65,8 @@ public class RentalEngine {
             throw new RentalSystemException("Vehicle with ID " + vehicleID + " does not exist.");
         }
 
-        // ChronoUnit.DAYS gives exact number of days between two dates
-        int days = (int) ChronoUnit.DAYS.between(rentalDate, plannedReturnDate);
+        int days = (int) ChronoUnit.DAYS.between(rentalDate, endDate);
 
-        // Calls Car/Truck/Motorcycle's overridden calculateRentalCost() - polymorphism
         return vehicle.calculateRentalCost(days);
     }
 
@@ -86,10 +90,10 @@ public class RentalEngine {
         }
 
         // 3. Calculate cost
-        double totalCost = calculateCost(vehicleID, rentalDate, plannedReturnDate);
+        double totalCost = calculateCost(vehicleID, rentalDate, plannedReturnDate, null);
 
         // 4. Build Rentals object (rentalID=0, DB will auto-increment; returnDate=null, not returned yet)
-        Rentals rental = new Rentals(0, customerID, vehicleID, rentalDate, plannedReturnDate, null, totalCost);
+        Rentals rental = new Rentals(0, customerID, null, vehicleID, null, null, rentalDate, plannedReturnDate, null, totalCost);
 
         // 5. Save rental to DB
         boolean saved = rentalDAO.addRental(rental);
@@ -123,9 +127,12 @@ public class RentalEngine {
         }
 
         // 2. Check not already returned
+        // Removed the strict check to allow updating the return date of an already returned vehicle
+        /*
         if (rental.isReturned()) {
             throw new RentalSystemException("This rental has already been returned.");
         }
+        */
 
         // 3. Validate return date
         if (actualReturnDate.isBefore(rental.getRentalDate())) {
@@ -133,7 +140,7 @@ public class RentalEngine {
         }
 
         // 4. Recalculate cost and mark rental as returned
-        double updatedCost = calculateCost(rental.getVehicleID(), rental.getRentalDate(), actualReturnDate);
+        double updatedCost = calculateCost(rental.getVehicleID(), rental.getRentalDate(), rental.getPlannedReturnDate(), actualReturnDate);
         rental.setReturnDate(actualReturnDate);
         rental.setTotalCost(updatedCost);
 

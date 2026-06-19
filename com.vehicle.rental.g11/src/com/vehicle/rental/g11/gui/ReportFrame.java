@@ -82,8 +82,8 @@ public class ReportFrame extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Overdue Rentals"));
 
-        String[] columns = {"Rental ID", "Customer ID", "Vehicle ID",
-                            "Planned Return", "Days Overdue"};
+        String[] columns = {"Rental ID", "Customer ID", "Customer Name", "Vehicle ID", "Vehicle Brand", "Vehicle Model",
+                                   "Planned Return", "Days Overdue"};
         overdueTableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
@@ -141,13 +141,16 @@ public class ReportFrame extends JFrame {
                     r.getPlannedReturnDate(),
                     java.time.LocalDate.now()
                 );
-                overdueTableModel.addRow(new Object[]{
-                    r.getRentalID(),
-                    r.getCustomerID(),
-                    r.getVehicleID(),
-                    r.getPlannedReturnDate(),
-                    daysOverdue + " days"
-                });
+                    overdueTableModel.addRow(new Object[]{
+                        r.getRentalID(),
+                        r.getCustomerID(),
+                        r.getCustomerName(),
+                        r.getVehicleID(),
+                        r.getVehicleBrand(),
+                        r.getVehicleModel(),
+                        r.getPlannedReturnDate(),
+                        daysOverdue + " days"
+                    });
             }
 
         } catch (RentalSystemException e) {
