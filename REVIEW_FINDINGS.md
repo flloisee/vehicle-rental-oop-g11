@@ -1,4 +1,4 @@
-# Review Findings – Vehicle Rental System (G11)
+/# Review Findings – Vehicle Rental System (G11)
 
 *Prepared by Code‑Reviewer on **2026‑06‑19**.*
 
@@ -27,6 +27,8 @@
 | 4 | Plate‑number validation too lax | ⚠️ Low | Only length is checked; malformed strings could be stored and later used in concatenated SQL. | Enforce a regex like `^[A-Z0-9]{1,7}$` and normalise to upper‑case. |
 | 5 | Detailed SQL errors are exposed | ⚠️ Low | DAO methods include raw `SQLException` messages in `RentalSystemException`. | Log the detailed exception internally and return a generic user‑friendly message. |
 | 6 | No TLS enforcement for MySQL connections | ⚠️ Low | Default URL is plain `jdbc:mysql://`. | Append `?useSSL=true&requireSSL=true` to the default URL or enforce via environment variable. |
+| 7 | Argon2 static instance thread‑safety | ⚠️ Medium | Static Argon2 object may be accessed concurrently, risking state corruption. | Create a fresh Argon2 instance per operation or synchronize usage. |
+| 8 | ResultSet not closed in DAO methods | ⚠️ Medium | Several DAO methods (e.g., `getRentalById`, `searchRentals`, `plateExists`) create a `ResultSet` without try‑with‑resources, leading to potential connection leaks. | Use try‑with‑resources for `ResultSet` or include it in the resource bracket. |
 
 ---
 
@@ -48,6 +50,7 @@
 | 2 | `VehicleDAO.searchVehicles` builds SQL dynamically each call | ⚠️ Low | Acceptable for low volume; consider caching the query string if needed. |
 | 3 | `RentalEngine.getOverdueRentals` loads all active rentals then filters in Java | ⚠️ Low | Add the date filter to the SQL (`WHERE planned_return_date < CURDATE() AND return_date IS NULL`). |
 | 4 | No logging framework used | ⚠️ Low | Add SLF4J + Logback, log entry/exit of service methods and any long‑running queries. |
+| 5 | ResultSet not closed in DAO methods (resource leaks) | ⚠️ Medium | Several DAO methods create ResultSet without try‑with‑resources, risking connection exhaustion. | Use try‑with‑resources for ResultSet or include it in the resource list. |
 
 ---
 
@@ -73,6 +76,7 @@
 | 3 | **Dependency Inversion** | `RentalEngine` creates DAO instances directly. | Inject DAO interfaces via constructor (or a tiny DI container). |
 | 4 | **DRY – Validation** | Plate‑number validation lives only in the model setter. | Centralise validation in a `VehicleValidator` utility used by both model and DAO. |
 | 5 | **Error‑Handling Consistency** | Mix of `RentalSystemException` and `IllegalArgumentException`. | Document when each exception type should be used; consider making `RentalSystemException` unchecked for convenience. |
+| 6 | **Null Return Values** | DAO methods like `VehicleDAO.getVehicleById` return `null`, forcing callers to handle NPE. | Return `Optional<Vehicle>` or throw a specific exception to enforce explicit handling. |
 
 ---
 
@@ -127,6 +131,9 @@ Run `mvn dependency:tree` and feed the output into **OWASP Dependency‑Check** 
 |12 | Run OWASP Dependency‑Check and remediate any findings. | Security | Medium |
 |13 | Extract DAO interfaces and inject them into `RentalEngine` (DI). | Dev | Medium |
 |14 | Remove dead/commented code (e.g., the commented‑out return‑check block). | Dev | Low |
+|15 | Ensure all DAO `ResultSet` objects are managed with try‑with‑resources. | Dev | Medium |
+|16 | Refactor DAO getters to return `Optional<T>` instead of `null`. | Dev | Medium |
+|17 | Add email format validation and password strength checks in `CustomerDAO`. | Dev | Medium |
 
 ---
 
