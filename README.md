@@ -10,43 +10,52 @@
 
 ---
 
+## Build & Run (Eclipse)
+
+- **Clean before compiling** – ensures no stale class files remain.
+- **macOS cleanup** – from the project root run:
+
+```bash
+dot_clean .
+```
+
 ## Development Roadmap
 
 ### Phase 1: Design & Architecture
-- [X] **Database Schema (Data Dictionary)**
+- [ ] **Database Schema (Data Dictionary)** – *ongoing – schema being refined*
 
 #### `Customers`
 | Column | Type | Default Value | Nullable | Extra |
 | :--- | :--- | :--- | :--- | :--- |
-| `customerID` | `varchar(36)` | `NULL` | `NO` | `PRIMARY KEY` |
-| `first_name` | `varchar(45)` | `NULL` | `NO` | |
+| `customerID` | `varchar(36)` |  | `NO` | `PRIMARY KEY` |
+| `first_name` | `varchar(45)` |  | `NO` | |
 | `middle_name` | `varchar(45)` | `NULL` | `YES` | |
-| `last_name` | `varchar(45)` | `NULL` | `NO` | |
+| `last_name` | `varchar(45)` |  | `NO` | |
 | `suffix` | `varchar(45)` | `NULL` | `YES` | |
-| `email` | `varchar(100)` | `NULL` | `NO` | |
-| `password` | `varchar(97)` | `NULL` | `NO` | |
+| `email` | `varchar(100)` |  | `NO` | |
+| `password` | `varchar(97)` |  | `NO` | |
 
 #### `Vehicles`
 | Column | Type | Default Value | Nullable | Extra |
 | :--- | :--- | :--- | :--- | :--- |
-| `vehicleID` | `int` | `NULL` | `NO` | `AUTO_INCREMENT` |
-| `brand` | `varchar(45)` | `NULL` | `NO` | |
-| `model` | `varchar(45)` | `NULL` | `NO` | |
-| `type` | `varchar(45)` | `NULL` | `NO` | |
-| `plate_number` | `varchar(7)` | `NULL` | `NO` | |
-| `daily_rate` | `decimal(10,2)` | `NULL` | `NO` | |
-| `status` | `enum('Available', 'Maintenance', 'Cleaning', 'Out of Service', 'Rented', 'Reserved')` | `'Available'` | `NO` | |
+| `vehicleID` | `int` |  | `NO` | `AUTO_INCREMENT` |
+| `brand` | `varchar(45)` |  | `NO` | |
+| `model` | `varchar(45)` |  | `NO` | |
+| `type` | `varchar(45)` |  | `NO` | |
+| `plate_number` | `varchar(7)` |  | `NO` | |
+| `daily_rate` | `decimal(10,2)` |  | `NO` | |
+| `status` | `enum('Available','Maintenance','Cleaning','Out of Service','Rented','Reserved')` | `'Available'` | `NO` | |
 
 #### `Rentals`
 | Column | Type | Default Value | Nullable | Extra |
 | :--- | :--- | :--- | :--- | :--- |
-| `rentalID` | `int` | `NULL` | `NO` | `AUTO_INCREMENT` |
-| `customerID` | `varchar(36)` | `NULL` | `NO` | |
-| `vehicleID` | `int` | `NULL` | `NO` | |
-| `rental_date` | `date` | `NULL` | `NO` | |
-| `planned_return_date` | `date` | `NULL` | `NO` | |
+| `rentalID` | `int` |  | `NO` | `AUTO_INCREMENT` |
+| `customerID` | `varchar(36)` |  | `NO` | |
+| `vehicleID` | `int` |  | `NO` | |
+| `rental_date` | `date` |  | `NO` | |
+| `planned_return_date` | `date` |  | `NO` | |
 | `return_date` | `date` | `NULL` | `YES` | |
-| `total_cost` | `decimal(10,2)` | `NULL` | `NO` | |
+| `total_cost` | `decimal(10,2)` |  | `NO` | |
 
 - [X] **Class Hierarchy (UML)**
   - **Abstraction:** `abstract class Vehicle`
