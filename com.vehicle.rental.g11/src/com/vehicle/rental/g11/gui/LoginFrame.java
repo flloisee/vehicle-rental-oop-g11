@@ -1,175 +1,260 @@
 package com.vehicle.rental.g11.gui;
 
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
+import java.awt.event.*;
 import com.vehicle.rental.g11.dao.CustomerDAO;
 import com.vehicle.rental.g11.model.Customer;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 
 public class LoginFrame extends JFrame {
 
-    private JTextField emailField;
-    private JPasswordField passwordField;
-    private JButton loginButton;
+    // Colors
+    private static final Color BG_DARK      = new Color(255, 255, 255);  // white
+    private static final Color BG_CARD      = new Color(250, 248, 255);  // soft white
+    private static final Color ACCENT       = new Color(120, 60, 200);   // purple
+    private static final Color ACCENT_HOVER = new Color(100, 40, 180);
+    private static final Color TEXT_PRIMARY  = new Color(30, 10, 60);    // dark purple-black
+    private static final Color TEXT_MUTED    = new Color(130, 100, 170); // muted purple
+    private static final Color FIELD_BG     = new Color(245, 240, 255);  // light purple tint
+    private static final Color FIELD_BORDER = new Color(200, 180, 230);  // soft purple border
 
-    private JTextField regFirstName;
-    private JTextField regMiddleName;
-    private JTextField regLastName;
-    private JTextField regSuffix;
-    private JTextField regEmail;
+    // Login fields
+    private JTextField     emailField;
+    private JPasswordField passwordField;
+    private JButton        loginButton;
+
+    // Register fields
+    private JTextField     regFirstName, regMiddleName, regLastName, regSuffix, regEmail;
     private JPasswordField regPassword;
-    private JButton registerButton;
+    private JButton        registerButton;
+
+    // Tab state
+    private JPanel loginCard, registerCard;
+    private JButton tabLogin, tabRegister;
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
 
     public LoginFrame() {
         setTitle("Vehicle Rental System — Access");
-        setSize(450, 450);
+        setSize(440, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(BG_DARK);
 
-        add(buildHeader(), BorderLayout.NORTH);
-        add(buildTabbedPanel(), BorderLayout.CENTER);
-        add(buildFooter(), BorderLayout.SOUTH);
+        add(buildHeader(),  BorderLayout.NORTH);
+        add(buildCenter(),  BorderLayout.CENTER);
+        add(buildFooter(),  BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
-    private JPanel buildTabbedPanel() {
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Login", buildFormPanel());
-        tabbedPane.addTab("Register", buildRegistrationPanel());
-        
-        // Setting foreground for tabs to ensure visibility
-        tabbedPane.setForeground(Color.BLACK);
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        wrapper.add(tabbedPane);
-        return wrapper;
-    }
+    // ── HEADER ────────────────────────────────────────────────────────────────
 
     private JPanel buildHeader() {
-        JLabel title = new JLabel("🚗 Vehicle Rental System");
-        title.setForeground(Color.WHITE);
-        title.setFont(new Font("Arial", Font.BOLD, 18));
-        JLabel sub = new JLabel("G11 — Please log in to continue");
-        sub.setForeground(new Color(180, 180, 220));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(BG_DARK);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+
+        // Icon circle
+        JLabel icon = new JLabel("VRS", SwingConstants.CENTER) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(ACCENT);
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        icon.setForeground(Color.WHITE);
+        icon.setFont(new Font("Arial", Font.BOLD, 14));
+        icon.setPreferredSize(new Dimension(54, 54));
+        icon.setMaximumSize(new Dimension(54, 54));
+        icon.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel title = new JLabel("Vehicle Rental System", SwingConstants.CENTER);
+        title.setForeground(TEXT_PRIMARY);
+        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel sub = new JLabel("G11  —  Please log in to continue", SwingConstants.CENTER);
+        sub.setForeground(TEXT_MUTED);
         sub.setFont(new Font("Arial", Font.PLAIN, 12));
+        sub.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel wrapper = new JPanel(new GridLayout(2, 1));
-        wrapper.setBackground(new Color(30, 30, 60));
-        wrapper.setBorder(BorderFactory.createEmptyBorder(14, 0, 14, 0));
-        wrapper.add(title);
-        wrapper.add(sub);
+        panel.add(icon);
+        panel.add(Box.createVerticalStrut(12));
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(4));
+        panel.add(sub);
 
-        JPanel outer = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        outer.setBackground(new Color(30, 30, 60));
-        outer.add(wrapper);
+        return panel;
+    }
+
+    // ── CENTER (tabs + cards) ─────────────────────────────────────────────────
+
+    private JPanel buildCenter() {
+        JPanel outer = new JPanel(new BorderLayout());
+        outer.setBackground(BG_DARK);
+        outer.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
+
+        outer.add(buildTabBar(),   BorderLayout.NORTH);
+        outer.add(buildCardPanel(), BorderLayout.CENTER);
+
         return outer;
     }
 
-    private JPanel buildFormPanel() {
+    private JPanel buildTabBar() {
+        JPanel bar = new JPanel(new GridLayout(1, 2, 0, 0));
+        bar.setBackground(BG_CARD);
+        bar.setBorder(new MatteBorder(1, 1, 0, 1, FIELD_BORDER));
+
+        tabLogin    = makeTabButton("Login",    true);
+        tabRegister = makeTabButton("Register", false);
+
+        tabLogin.addActionListener(e -> switchTab(true));
+        tabRegister.addActionListener(e -> switchTab(false));
+
+        bar.add(tabLogin);
+        bar.add(tabRegister);
+        return bar;
+    }
+
+    private JButton makeTabButton(String text, boolean active) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Arial", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setOpaque(true);
+        applyTabStyle(btn, active);
+        return btn;
+    }
+
+    private void applyTabStyle(JButton btn, boolean active) {
+        if (active) {
+            btn.setBackground(ACCENT);
+            btn.setForeground(Color.WHITE);
+        } else {
+            btn.setBackground(BG_CARD);
+            btn.setForeground(TEXT_MUTED);
+        }
+    }
+
+    private void switchTab(boolean showLogin) {
+        applyTabStyle(tabLogin,    showLogin);
+        applyTabStyle(tabRegister, !showLogin);
+        cardLayout.show(cardPanel, showLogin ? "login" : "register");
+    }
+
+    private JPanel buildCardPanel() {
+        cardLayout = new CardLayout();
+        cardPanel  = new JPanel(cardLayout);
+        cardPanel.setBackground(BG_CARD);
+        cardPanel.setBorder(new MatteBorder(0, 1, 1, 1, FIELD_BORDER));
+
+        cardPanel.add(buildLoginCard(),    "login");
+        cardPanel.add(buildRegisterCard(), "register");
+
+        return cardPanel;
+    }
+
+    // ── LOGIN CARD ────────────────────────────────────────────────────────────
+
+    private JPanel buildLoginCard() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 10, 40));
+        panel.setBackground(BG_CARD);
+        panel.setBorder(BorderFactory.createEmptyBorder(24, 30, 24, 30));
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.weightx = 1;
+        gbc.gridwidth = 1;
 
-        // Email
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
-        panel.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        emailField = new JTextField();
+        // Email label
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 4, 0);
+        panel.add(makeLabel("Email"), gbc);
+
+        // Email field
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 14, 0);
+        emailField = makeTextField();
         panel.add(emailField, gbc);
 
-        // Password
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3;
-        panel.add(new JLabel("Password:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        passwordField = new JPasswordField();
+        // Password label
+        gbc.gridy = 2;
+        gbc.insets = new Insets(0, 0, 4, 0);
+        panel.add(makeLabel("Password"), gbc);
+
+        // Password field
+        gbc.gridy = 3;
+        gbc.insets = new Insets(0, 0, 22, 0);
+        passwordField = makePasswordField();
         panel.add(passwordField, gbc);
 
         // Login button
-        gbc.gridx = 0; gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(16, 6, 6, 6);
-        loginButton = new JButton("Login");
-        loginButton.setBackground(new Color(30, 30, 60));
-        loginButton.setForeground(Color.BLACK);
-        loginButton.setFocusPainted(false);
-        loginButton.setFont(new Font("Arial", Font.BOLD, 14));
+        gbc.gridy = 4;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        loginButton = makeAccentButton("Login");
         panel.add(loginButton, gbc);
 
-        // Login action — teammate fills in Argon2 verify logic here
         loginButton.addActionListener(e -> handleLogin());
-
-        // Allow Enter key to submit
         passwordField.addActionListener(e -> handleLogin());
 
         return panel;
     }
 
-    private JPanel buildFooter() {
-        JPanel panel = new JPanel();
-        JLabel label = new JLabel("Vehicle Rental System © G11");
-        label.setForeground(Color.GRAY);
-        label.setFont(new Font("Arial", Font.PLAIN, 10));
-        panel.add(label);
-        return panel;
-    }
+    // ── REGISTER CARD ─────────────────────────────────────────────────────────
 
-    private JPanel buildRegistrationPanel() {
+    private JPanel buildRegisterCard() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 10, 40));
+        panel.setBackground(BG_CARD);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 6, 5, 6);
+        gbc.weightx = 1;
 
-        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0.3;
-        panel.add(new JLabel("First Name:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        regFirstName = new JTextField();
+        int row = 0;
+
+        row = addField(panel, gbc, row, "First Name *");
+        regFirstName = makeTextField();
+        gbc.gridy = row++; gbc.insets = new Insets(0, 0, 6, 0);
         panel.add(regFirstName, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.3;
-        panel.add(new JLabel("Middle Name:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        regMiddleName = new JTextField();
+        row = addField(panel, gbc, row, "Middle Name");
+        regMiddleName = makeTextField();
+        gbc.gridy = row++; gbc.insets = new Insets(0, 0, 6, 0);
         panel.add(regMiddleName, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0.3;
-        panel.add(new JLabel("Last Name:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        regLastName = new JTextField();
+        row = addField(panel, gbc, row, "Last Name *");
+        regLastName = makeTextField();
+        gbc.gridy = row++; gbc.insets = new Insets(0, 0, 6, 0);
         panel.add(regLastName, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0.3;
-        panel.add(new JLabel("Suffix:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        regSuffix = new JTextField();
+        row = addField(panel, gbc, row, "Suffix");
+        regSuffix = makeTextField();
+        gbc.gridy = row++; gbc.insets = new Insets(0, 0, 6, 0);
         panel.add(regSuffix, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 4; gbc.weightx = 0.3;
-        panel.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        regEmail = new JTextField();
+        row = addField(panel, gbc, row, "Email *");
+        regEmail = makeTextField();
+        gbc.gridy = row++; gbc.insets = new Insets(0, 0, 6, 0);
         panel.add(regEmail, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 5; gbc.weightx = 0.3;
-        panel.add(new JLabel("Password:"), gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        regPassword = new JPasswordField();
+        row = addField(panel, gbc, row, "Password *");
+        regPassword = makePasswordField();
+        gbc.gridy = row++; gbc.insets = new Insets(0, 0, 10, 0);
         panel.add(regPassword, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 6;
-        gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 6, 6, 6);
-        registerButton = new JButton("Register");
-        registerButton.setBackground(new Color(30, 30, 60));
-        registerButton.setForeground(Color.BLACK);
-        registerButton.setFocusPainted(false);
-        registerButton.setFont(new Font("Arial", Font.BOLD, 14));
+        registerButton = makeAccentButton("Create Account");
+        gbc.gridy = row; gbc.insets = new Insets(0, 0, 0, 0);
         panel.add(registerButton, gbc);
 
         registerButton.addActionListener(e -> handleRegistration());
@@ -178,50 +263,101 @@ public class LoginFrame extends JFrame {
         return panel;
     }
 
-    private void handleRegistration() {
-        String fName = regFirstName.getText().trim();
-        String mName = regMiddleName.getText().trim();
-        String lName = regLastName.getText().trim();
-        String suffix = regSuffix.getText().trim();
-        String email = regEmail.getText().trim();
-        String password = new String(regPassword.getPassword());
-
-        if (fName.isEmpty() || lName.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "First Name, Last Name, Email, and Password are required.",
-                "Validation Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        try {
-            Customer customer = new Customer(null, fName, mName, lName, suffix, email);
-            CustomerDAO customerDAO = new CustomerDAO();
-            if (customerDAO.addCustomer(customer, password)) {
-                JOptionPane.showMessageDialog(this,
-                    "Registration successful! You can now log in.",
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
-                
-                // Clear fields
-                regFirstName.setText("");
-                regMiddleName.setText("");
-                regLastName.setText("");
-                regSuffix.setText("");
-                regEmail.setText("");
-                regPassword.setText("");
-            } else {
-                JOptionPane.showMessageDialog(this,
-                    "Registration failed. Please try again.",
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (RentalSystemException e) {
-            JOptionPane.showMessageDialog(this,
-                "Database error: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
-        }
+    private int addField(JPanel panel, GridBagConstraints gbc, int row, String labelText) {
+        gbc.gridy = row;
+        gbc.insets = new Insets(0, 0, 4, 0);
+        panel.add(makeLabel(labelText), gbc);
+        return row + 1;
     }
 
+    // ── FOOTER ────────────────────────────────────────────────────────────────
+
+    private JPanel buildFooter() {
+        JPanel panel = new JPanel();
+        panel.setBackground(BG_DARK);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 12, 0));
+        JLabel label = new JLabel("Vehicle Rental System © G11");
+        label.setForeground(new Color(180, 150, 210));
+        label.setFont(new Font("Arial", Font.PLAIN, 10));
+        panel.add(label);
+        return panel;
+    }
+
+    // ── HELPERS ───────────────────────────────────────────────────────────────
+
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setForeground(TEXT_MUTED);
+        lbl.setFont(new Font("Arial", Font.PLAIN, 12));
+        return lbl;
+    }
+
+    private JTextField makeTextField() {
+        JTextField f = new JTextField();
+        styleField(f);
+        return f;
+    }
+
+    private JPasswordField makePasswordField() {
+        JPasswordField f = new JPasswordField();
+        styleField(f);
+        return f;
+    }
+
+    private void styleField(JTextField f) {
+        f.setBackground(FIELD_BG);
+        f.setForeground(TEXT_PRIMARY);
+        f.setCaretColor(TEXT_PRIMARY);
+        f.setFont(new Font("Arial", Font.PLAIN, 13));
+        f.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(FIELD_BORDER, 1, true),
+            BorderFactory.createEmptyBorder(7, 10, 7, 10)
+        ));
+        f.setPreferredSize(new Dimension(f.getPreferredSize().width, 32));
+
+        // Highlight border on focus
+        f.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) {
+                f.setBorder(BorderFactory.createCompoundBorder(
+                    new LineBorder(ACCENT, 1, true),
+                    BorderFactory.createEmptyBorder(7, 10, 7, 10)
+                ));
+            }
+            @Override public void focusLost(FocusEvent e) {
+                f.setBorder(BorderFactory.createCompoundBorder(
+                    new LineBorder(FIELD_BORDER, 1, true),
+                    BorderFactory.createEmptyBorder(7, 10, 7, 10)
+                ));
+            }
+        });
+    }
+
+    private JButton makeAccentButton(String text) {
+        JButton btn = new JButton(text) {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getModel().isRollover() ? ACCENT_HOVER : ACCENT);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Arial", Font.BOLD, 14));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(btn.getPreferredSize().width, 40));
+        return btn;
+    }
+
+    // ── HANDLERS (unchanged logic) ────────────────────────────────────────────
+
     private void handleLogin() {
-        String email = emailField.getText().trim();
+        String email    = emailField.getText().trim();
         String password = new String(passwordField.getPassword());
 
         if (email.isEmpty() || password.isEmpty()) {
@@ -233,10 +369,11 @@ public class LoginFrame extends JFrame {
 
         try {
             CustomerDAO customerDAO = new CustomerDAO();
-            Customer customer = customerDAO.getCustomerByEmail(email);
-            String storedHash = customerDAO.getPasswordByEmail(email);
+            Customer customer       = customerDAO.getCustomerByEmail(email);
+            String storedHash       = customerDAO.getPasswordByEmail(email);
 
-            if (customer != null && storedHash != null && com.vehicle.rental.g11.service.PasswordUtil.verifyPassword(storedHash, password)) {
+            if (customer != null && storedHash != null &&
+                com.vehicle.rental.g11.service.PasswordUtil.verifyPassword(storedHash, password)) {
                 JOptionPane.showMessageDialog(this,
                     "Login successful! Welcome, " + customer.getFirstName(),
                     "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -246,6 +383,44 @@ public class LoginFrame extends JFrame {
                 JOptionPane.showMessageDialog(this,
                     "Invalid email or password.",
                     "Login Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                "Database error: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void handleRegistration() {
+        String fName    = regFirstName.getText().trim();
+        String mName    = regMiddleName.getText().trim();
+        String lName    = regLastName.getText().trim();
+        String suffix   = regSuffix.getText().trim();
+        String email    = regEmail.getText().trim();
+        String password = new String(regPassword.getPassword());
+
+        if (fName.isEmpty() || lName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "First Name, Last Name, Email, and Password are required.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        try {
+            Customer customer       = new Customer(null, fName, mName, lName, suffix, email);
+            CustomerDAO customerDAO = new CustomerDAO();
+            if (customerDAO.addCustomer(customer, password)) {
+                JOptionPane.showMessageDialog(this,
+                    "Registration successful! You can now log in.",
+                    "Success", JOptionPane.INFORMATION_MESSAGE);
+                regFirstName.setText(""); regMiddleName.setText("");
+                regLastName.setText("");  regSuffix.setText("");
+                regEmail.setText("");     regPassword.setText("");
+                switchTab(true);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                    "Registration failed. Please try again.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (RentalSystemException e) {
             JOptionPane.showMessageDialog(this,
