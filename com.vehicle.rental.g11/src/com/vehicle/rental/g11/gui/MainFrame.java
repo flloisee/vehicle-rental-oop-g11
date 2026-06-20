@@ -13,7 +13,7 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         setTitle("Vehicle Rental System - Dashboard");
-        setSize(820, 520);
+        setSize(820, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -64,7 +64,7 @@ public class MainFrame extends JFrame {
         JButton reportBtn   = makeNavButton("Reports");
         JButton logoutBtn   = makeLogoutButton("Logout");
 
-        Dimension btnSize = new Dimension(220, 80);
+        Dimension btnSize = new Dimension(220, 164);
         reportBtn.setPreferredSize(btnSize);
         logoutBtn.setPreferredSize(btnSize);
 
@@ -115,6 +115,7 @@ public class MainFrame extends JFrame {
         };
         btn.setForeground(Color.WHITE);
         btn.setFont(new Font("Arial", Font.BOLD, 16));
+        btn.setHorizontalAlignment(SwingConstants.CENTER);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
@@ -140,6 +141,7 @@ public class MainFrame extends JFrame {
         };
         btn.setForeground(Color.WHITE);
         btn.setFont(new Font("Arial", Font.BOLD, 16));
+        btn.setHorizontalAlignment(SwingConstants.CENTER);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);
         btn.setContentAreaFilled(false);
