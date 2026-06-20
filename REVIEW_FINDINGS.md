@@ -1,4 +1,4 @@
-/# Review Findings – Vehicle Rental System (G11)
+# Review Findings – Vehicle Rental System (G11)
 
 *Prepared by Code‑Reviewer on **2026‑06‑19**.*
 
