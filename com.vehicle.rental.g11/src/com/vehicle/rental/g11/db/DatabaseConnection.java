@@ -3,7 +3,9 @@ package com.vehicle.rental.g11.db;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
 import com.vehicle.rental.g11.exception.RentalSystemException;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class DatabaseConnection {
@@ -21,7 +23,7 @@ public class DatabaseConnection {
 
     private static final String USER = dotenv.get("DB_USER", "root");
 
-    private static final String PASSWORD = dotenv.get("DB_PASSWORD", "");
+    private static final String PASSWORD = dotenv.get("DB_PASSWORD", "jacopogi123");
     private DatabaseConnection() throws RentalSystemException {
         try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);

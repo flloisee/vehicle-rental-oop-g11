@@ -3,7 +3,6 @@ package com.vehicle.rental.g11.gui;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -37,7 +36,7 @@ public class CustomerFrame extends JFrame {
     private JTextField firstNameField, middleNameField, lastNameField,
                        suffixField, emailField;
     private JPasswordField passwordField;
-    private JButton addButton, updateButton, clearButton;
+    private JButton addButton, updateButton, clearButton, deleteButton;
 
     private String selectedCustomerID = null;
 
@@ -175,12 +174,14 @@ public class CustomerFrame extends JFrame {
         addButton    = new JButton("Add Customer");
         updateButton = new JButton("Update Customer");
         clearButton  = new JButton("Clear Form");
+        deleteButton = new JButton("Delete Customer");
         JButton backButton = new JButton("Back to Main Menu");
  
         // -------------------------------------------------------
         // TODO (teammate): wire these to CustomerDAO methods
         // addButton    → CustomerDAO.addCustomer()
         // updateButton → CustomerDAO.updateCustomer()
+        // deleteButton → CustomerDAO.deleteCustomer()
         // -------------------------------------------------------
         addButton.addActionListener(e -> {
             String fName = firstNameField.getText();
@@ -243,6 +244,38 @@ public class CustomerFrame extends JFrame {
             }
         });
 
+        deleteButton.addActionListener(e -> {
+            if (selectedCustomerID == null) {
+                JOptionPane.showMessageDialog(this, "Please select a customer to permanently delete.",
+                                              "Selection Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to PERMANENTLY DELETE this customer?\nThis action cannot be undone!",
+                "Confirm Permanent Delete", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+
+            if (confirm != JOptionPane.YES_OPTION) {
+                return;
+            }
+
+            try {
+                com.vehicle.rental.g11.dao.CustomerDAO dao = new com.vehicle.rental.g11.dao.CustomerDAO();
+                if (dao.deleteCustomer(selectedCustomerID)) {
+                    JOptionPane.showMessageDialog(this, "Customer permanently deleted successfully!",
+                                                  "Delete Success", JOptionPane.INFORMATION_MESSAGE);
+                    clearForm();
+                    loadCustomers();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to delete customer. (Customer not found)",
+                                                  "Delete Failed", JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (com.vehicle.rental.g11.exception.RentalSystemException ex) {
+                JOptionPane.showMessageDialog(this, "Error deleting customer: " + ex.getMessage(),
+                                              "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         clearButton.addActionListener(e -> clearForm());
         backButton.addActionListener(e -> {
             dispose();
@@ -251,6 +284,7 @@ public class CustomerFrame extends JFrame {
  
         panel.add(addButton);
         panel.add(updateButton);
+        panel.add(deleteButton);
         panel.add(clearButton);
         panel.add(backButton);
 

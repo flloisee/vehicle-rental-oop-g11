@@ -1,16 +1,16 @@
 package com.vehicle.rental.g11.dao;
 
-import com.vehicle.rental.g11.db.DatabaseConnection;
-import com.vehicle.rental.g11.exception.RentalSystemException;
-import com.vehicle.rental.g11.model.Customer;
-import com.vehicle.rental.g11.service.PasswordUtil;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.vehicle.rental.g11.db.DatabaseConnection;
+import com.vehicle.rental.g11.exception.RentalSystemException;
+import com.vehicle.rental.g11.model.Customer;
+import com.vehicle.rental.g11.service.PasswordUtil;
 
 public class CustomerDAO {
 
@@ -182,6 +182,79 @@ public class CustomerDAO {
 
         } catch (SQLException e) {
             throw new RentalSystemException("Failed to update customer password: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Soft-delete (archive) a customer by setting `is_active` = 0.
+     * Validation: checks that the customer exists and is currently active.
+     * Returns true if the update affected at least one row, false if customer
+     * doesn't exist or was already inactive.
+     * Uses PreparedStatement to avoid SQL injection and proper exception handling.
+     *
+     * Sample console flow:
+     * - Success: "Customer 123 archived successfully."
+     * - Not found: "Customer 123 not found; nothing to archive."
+     * - Already inactive: "Customer 123 is already archived."
+     *
+     * Why soft delete: preserves historical data and avoids breaking
+     * foreign-key references; allows easy restore and auditability.
+     */
+    public boolean archiveCustomer(int customerId) throws RentalSystemException {
+        String checkSql = "SELECT is_active FROM customers WHERE customer_id = ?";
+        String updateSql = "UPDATE customers SET is_active = 0 WHERE customer_id = ?";
+
+        try (Connection conn = getConn();
+             PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+
+            // Validation: ensure customer exists
+            checkPs.setInt(1, customerId);
+            try (var rs = checkPs.executeQuery()) {
+                if (!rs.next()) {
+                    // Customer does not exist
+                    return false;
+                }
+                boolean isActive = rs.getBoolean("is_active");
+                if (!isActive) {
+                    // Already archived/inactive
+                    return false;
+                }
+            }
+
+            // Perform soft delete
+            try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
+                updatePs.setInt(1, customerId);
+                int rows = updatePs.executeUpdate();
+                return rows > 0;
+            }
+
+        } catch (SQLException e) {
+            throw new RentalSystemException("Failed to archive customer: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Permanently delete a customer from the database.
+     * Removes the customer record completely from the Customers table.
+     * Returns true if deletion was successful, false if customer not found.
+     * Uses PreparedStatement to prevent SQL injection.
+     *
+     * Sample console flow:
+     * - Success: "Customer abc-123 permanently deleted."
+     * - Not found: "Customer abc-123 not found."
+     */
+    public boolean deleteCustomer(String customerID) throws RentalSystemException {
+        String deleteSql = "DELETE FROM Customers WHERE customerID = ?";
+
+        try (Connection conn = getConn();
+             PreparedStatement deletePs = conn.prepareStatement(deleteSql)) {
+
+            deletePs.setString(1, customerID);
+            int rows = deletePs.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            throw new RentalSystemException("Failed to delete customer: " + e.getMessage(), e);
         }
     }
 }
