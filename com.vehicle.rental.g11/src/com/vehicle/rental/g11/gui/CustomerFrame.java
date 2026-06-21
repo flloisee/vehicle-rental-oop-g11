@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -210,11 +211,19 @@ customerTable = new JTable(tableModel) {
             }
             @Override
             public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
-                java.awt.Component c = super.prepareRenderer(renderer, row, column);
-                if (row == hoverRow && !isRowSelected(row)) {
+                JComponent c = (JComponent) super.prepareRenderer(renderer, row, column);
+                if (isRowSelected(row)) {
+                    c.setBackground(UITheme.PURPLE);
+                    c.setForeground(java.awt.Color.WHITE);
+                    c.setBorder(javax.swing.BorderFactory.createLineBorder(UITheme.PURPLE, 1));
+                } else if (row == hoverRow) {
                     c.setBackground(UITheme.PURPLE_LIGHT);
+                    c.setForeground(UITheme.TEXT_PRIMARY);
+                    c.setBorder(null);
                 } else {
                     c.setBackground(UITheme.BG);
+                    c.setForeground(UITheme.TEXT_PRIMARY);
+                    c.setBorder(null);
                 }
                 return c;
             }

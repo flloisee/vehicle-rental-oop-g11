@@ -24,7 +24,7 @@ public class LoginFrame extends JFrame {
     private JButton        registerButton;
 
     // Tab state
-    private JPanel loginCard, registerCard;
+
     private JButton tabLogin, tabRegister;
     private CardLayout cardLayout;
     private JPanel cardPanel;

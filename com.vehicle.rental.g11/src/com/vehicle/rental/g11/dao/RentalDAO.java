@@ -221,7 +221,7 @@ public class RentalDAO {
         Date returnDateRaw = rs.getDate("return_date");
         LocalDate returnDate = (returnDateRaw != null) ? returnDateRaw.toLocalDate() : null;
 
-        String customerName = rs.getString("customerName");
+
         String firstName = rs.getString("first_name");
         String middleName = rs.getString("middle_name");
         String lastName = rs.getString("last_name");

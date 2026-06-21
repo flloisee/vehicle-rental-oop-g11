@@ -99,7 +99,7 @@ public class CustomerDAO {
 
         List<Customer> customers = new ArrayList<>();
         try (PreparedStatement ps = getConn().prepareStatement(sql.toString())) {
-            String searchPattern = "%" + query + "%"; // This was old, I need to use keyword
+
             int paramIndex = 1;
             for (String keyword : keywords) {
                 String pattern = "%" + keyword + "%";

@@ -193,12 +193,19 @@ addWindowListener(new java.awt.event.WindowAdapter() {
             }
             @Override
             public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
-                java.awt.Component c = super.prepareRenderer(renderer, row, column);
-                // Apply hover background when not selected
-                if (row == hoverRow && !isRowSelected(row)) {
+                JComponent c = (JComponent) super.prepareRenderer(renderer, row, column);
+                if (isRowSelected(row)) {
+                    c.setBackground(UITheme.PURPLE);
+                    c.setForeground(java.awt.Color.WHITE);
+                    c.setBorder(javax.swing.BorderFactory.createLineBorder(UITheme.PURPLE, 1));
+                } else if (row == hoverRow) {
                     c.setBackground(UITheme.PURPLE_LIGHT);
+                    c.setForeground(UITheme.TEXT_PRIMARY);
+                    c.setBorder(null);
                 } else {
                     c.setBackground(UITheme.BG);
+                    c.setForeground(UITheme.TEXT_PRIMARY);
+                    c.setBorder(null);
                 }
                 return c;
             }
