@@ -5,6 +5,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.function.Consumer;
+import com.vehicle.rental.g11.gui.UITheme;
 
 public class DatePickerDialog extends JDialog {
     private LocalDate selectedDate;
@@ -25,8 +26,8 @@ public class DatePickerDialog extends JDialog {
 
         JPanel header = new JPanel(new BorderLayout());
         monthLabel = new JLabel("", JLabel.CENTER);
-        JButton prevButton = new JButton("<");
-        JButton nextButton = new JButton(">");
+        JButton prevButton = UITheme.roundedButton("<", UITheme.ACCENT, UITheme.ACCENT_HOVER);
+        JButton nextButton = UITheme.roundedButton(">", UITheme.ACCENT, UITheme.ACCENT_HOVER);
 
         prevButton.addActionListener(e -> changeMonth(-1));
         nextButton.addActionListener(e -> changeMonth(1));
@@ -79,7 +80,7 @@ public class DatePickerDialog extends JDialog {
             JButton dayButton = new JButton(String.valueOf(day));
             if (date.equals(selectedDate)) {
                 dayButton.setOpaque(true);
-                dayButton.setBackground(new Color(0, 102, 204));
+                dayButton.setBackground(UITheme.ACCENT);
                 dayButton.setForeground(Color.BLACK);
             }
             dayButton.addActionListener(e -> {

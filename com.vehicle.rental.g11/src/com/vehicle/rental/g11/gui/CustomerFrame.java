@@ -22,6 +22,7 @@ import com.vehicle.rental.g11.dao.CustomerDAO;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Customer;
 import com.vehicle.rental.g11.service.SearchHandler;
+import com.vehicle.rental.g11.gui.UITheme;
 
 public class CustomerFrame extends JFrame {
 
@@ -49,11 +50,18 @@ public class CustomerFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
-
+        getContentPane().setBackground(UITheme.BG);
         add(buildFormPanel(), BorderLayout.NORTH);
         add(buildTablePanel(), BorderLayout.CENTER);
         add(buildButtonPanel(), BorderLayout.SOUTH);
-
+        // Ensure the dashboard reappears when this frame is closed
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                // MainFrame was hidden when this frame opened
+                CustomerFrame.this.mainFrame.setVisible(true);
+            }
+        });
         setupSearchHandler();
         loadCustomers();
         setVisible(true);
@@ -61,30 +69,50 @@ public class CustomerFrame extends JFrame {
 
     private JPanel buildFormPanel() {
         JPanel panel = new JPanel(new GridLayout(4, 4, 8, 8));
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createTitledBorder("Customer Details"));
 
-        panel.add(new JLabel("First Name:"));
+        JLabel lbl;
+        lbl = new JLabel("First Name:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         firstNameField = new JTextField();
+        UITheme.styleField(firstNameField);
         panel.add(firstNameField);
 
-        panel.add(new JLabel("Middle Name:"));
+        lbl = new JLabel("Middle Name:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         middleNameField = new JTextField();
+        UITheme.styleField(middleNameField);
         panel.add(middleNameField);
 
-        panel.add(new JLabel("Last Name:"));
+        lbl = new JLabel("Last Name:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         lastNameField = new JTextField();
+        UITheme.styleField(lastNameField);
         panel.add(lastNameField);
 
-        panel.add(new JLabel("Suffix:"));
+        lbl = new JLabel("Suffix:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         suffixField = new JTextField();
+        UITheme.styleField(suffixField);
         panel.add(suffixField);
 
-        panel.add(new JLabel("Email:"));
+        lbl = new JLabel("Email:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         emailField = new JTextField();
+        UITheme.styleField(emailField);
         panel.add(emailField);
 
-        panel.add(new JLabel("Password:"));
+        lbl = new JLabel("Password:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         passwordField = new JPasswordField();
+        UITheme.styleField(passwordField);
         panel.add(passwordField);
 
         // Fill remaining grid cells
@@ -96,8 +124,12 @@ public class CustomerFrame extends JFrame {
 
     private JPanel buildSearchPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Search: "));
+        panel.setBackground(UITheme.BG);
+        JLabel lbl = new JLabel("Search: ");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         searchField = new JTextField(20);
+        UITheme.styleField(searchField);
         panel.add(searchField);
         return panel;
     }
@@ -155,9 +187,43 @@ public class CustomerFrame extends JFrame {
             }
         };
 
-        customerTable = new JTable(tableModel);
+customerTable = new JTable(tableModel) {
+            private int hoverRow = -1;
+            {
+                addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                    @Override
+                    public void mouseMoved(java.awt.event.MouseEvent e) {
+                        int row = rowAtPoint(e.getPoint());
+                        if (row != hoverRow) {
+                            hoverRow = row;
+                            repaint();
+                        }
+                    }
+                });
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        hoverRow = -1;
+                        repaint();
+                    }
+                });
+            }
+            @Override
+            public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                java.awt.Component c = super.prepareRenderer(renderer, row, column);
+                if (row == hoverRow && !isRowSelected(row)) {
+                    c.setBackground(UITheme.PURPLE_LIGHT);
+                } else {
+                    c.setBackground(UITheme.BG);
+                }
+                return c;
+            }
+        };
+        UITheme.styleTable(customerTable);
+        customerTable.setRowHeight(28);
+        customerTable.setIntercellSpacing(new java.awt.Dimension(0, 5));
         customerTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        
         customerTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 loadSelectedRowIntoForm();
@@ -170,12 +236,13 @@ public class CustomerFrame extends JFrame {
 
     private JPanel buildButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        panel.setBackground(UITheme.BG);
 
-        addButton    = new JButton("Add Customer");
-        updateButton = new JButton("Update Customer");
-        clearButton  = new JButton("Clear Form");
-        deleteButton = new JButton("Delete Customer");
-        JButton backButton = new JButton("Back to Main Menu");
+        addButton    = UITheme.roundedButton("Add Customer");
+        updateButton = UITheme.roundedButton("Update Customer");
+        clearButton  = UITheme.roundedButton("Clear Form");
+        deleteButton = UITheme.roundedButton("Delete Customer");
+        JButton backButton = UITheme.roundedButton("Back to Main Menu");
  
         // -------------------------------------------------------
         // TODO (teammate): wire these to CustomerDAO methods
@@ -278,8 +345,9 @@ public class CustomerFrame extends JFrame {
 
         clearButton.addActionListener(e -> clearForm());
         backButton.addActionListener(e -> {
-            dispose();
+            // Show the dashboard before disposing to avoid a moment with no visible windows
             mainFrame.setVisible(true);
+            dispose();
         });
  
         panel.add(addButton);

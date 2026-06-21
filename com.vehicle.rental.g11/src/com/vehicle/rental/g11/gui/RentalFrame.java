@@ -25,6 +25,7 @@ import com.vehicle.rental.g11.dao.VehicleDAO;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Rentals;
 import com.vehicle.rental.g11.service.SearchHandler;
+import com.vehicle.rental.g11.gui.UITheme;
 
 public class RentalFrame extends JFrame {
 
@@ -63,6 +64,7 @@ public class RentalFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(UITheme.BG);
 
         add(buildFormPanel(), BorderLayout.NORTH);
         add(buildTablePanel(), BorderLayout.CENTER);
@@ -72,54 +74,86 @@ public class RentalFrame extends JFrame {
         setupCustomerNameListener();
         setupVehicleSearchListener();
         loadRentals();
+addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                RentalFrame.this.mainFrame.setVisible(true);
+            }
+        });
         setVisible(true);
     }
 
     private JPanel buildFormPanel() {
         JPanel panel = new JPanel(new GridLayout(5, 4, 8, 8));
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createTitledBorder("Rental Details"));
 
-        panel.add(new JLabel("Customer Name:"));
+        JLabel lbl;
+        lbl = new JLabel("Customer Name:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         customerNameField = new JTextField();
+        UITheme.styleField(customerNameField);
         panel.add(customerNameField);
 
-        panel.add(new JLabel("Customer ID:"));
+        lbl = new JLabel("Customer ID:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         customerIDField = new JTextField();
+        UITheme.styleField(customerIDField);
         customerIDField.setEditable(false);
-        customerIDField.setBackground(new Color(240, 240, 240));
         panel.add(customerIDField);
 
-        panel.add(new JLabel("Vehicle Brand/Model:"));
+        lbl = new JLabel("Vehicle Brand/Model:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         vehicleBrandModelField = new JTextField();
+        UITheme.styleField(vehicleBrandModelField);
         panel.add(vehicleBrandModelField);
 
-        panel.add(new JLabel("Plate Number:"));
+        lbl = new JLabel("Plate Number:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         vehiclePlateField = new JTextField();
+        UITheme.styleField(vehiclePlateField);
         panel.add(vehiclePlateField);
 
-        panel.add(new JLabel("Vehicle ID:"));
+        lbl = new JLabel("Vehicle ID:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         vehicleIDField = new JTextField();
+        UITheme.styleField(vehicleIDField);
         vehicleIDField.setEditable(false);
-        vehicleIDField.setBackground(new Color(240, 240, 240));
         panel.add(vehicleIDField);
 
-        panel.add(new JLabel("Rental Date:"));
+        lbl = new JLabel("Rental Date:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         rentalDateField = new JTextField();
+        UITheme.styleField(rentalDateField);
         panel.add(createDatePickerPanel(rentalDateField));
 
-        panel.add(new JLabel("Planned Return:"));
+        lbl = new JLabel("Planned Return:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         plannedReturnDateField = new JTextField();
+        UITheme.styleField(plannedReturnDateField);
         panel.add(createDatePickerPanel(plannedReturnDateField));
 
-        panel.add(new JLabel("Actual Return:"));
+        lbl = new JLabel("Actual Return:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         returnDateField = new JTextField();
+        UITheme.styleField(returnDateField);
         returnDateField.setToolTipText("Leave blank if vehicle not yet returned");
         panel.add(createDatePickerPanel(returnDateField));
 
-        panel.add(new JLabel("Total Cost (auto-calculated):"));
+        lbl = new JLabel("Total Cost (auto-calculated):");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         totalCostField = new JTextField();
+        UITheme.styleField(totalCostField);
         totalCostField.setEditable(false);
-        totalCostField.setBackground(new Color(240, 240, 240));
         panel.add(totalCostField);
 
         panel.add(new JLabel(""));
@@ -154,8 +188,9 @@ public class RentalFrame extends JFrame {
 
     private JPanel createDatePickerPanel(JTextField field) {
         JPanel panel = new JPanel(new GridLayout(1, 2, 5, 0));
+        panel.setBackground(UITheme.BG);
+        UITheme.styleField(field);
         field.setEditable(false);
-        field.setBackground(new Color(240, 240, 240));
 
         JButton selectBtn = new JButton("Select Date");
         selectBtn.addActionListener(e -> {
@@ -180,8 +215,12 @@ public class RentalFrame extends JFrame {
 
     private JPanel buildSearchPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Search: "));
+        panel.setBackground(UITheme.BG);
+        JLabel lbl = new JLabel("Search: ");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         searchField = new JTextField(20);
+        UITheme.styleField(searchField);
         panel.add(searchField);
         return panel;
     }
@@ -309,9 +348,43 @@ public class RentalFrame extends JFrame {
             }
         };
 
-        rentalTable = new JTable(tableModel);
+rentalTable = new JTable(tableModel) {
+            private int hoverRow = -1;
+            {
+                addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                    @Override
+                    public void mouseMoved(java.awt.event.MouseEvent e) {
+                        int row = rowAtPoint(e.getPoint());
+                        if (row != hoverRow) {
+                            hoverRow = row;
+                            repaint();
+                        }
+                    }
+                });
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        hoverRow = -1;
+                        repaint();
+                    }
+                });
+            }
+            @Override
+            public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                java.awt.Component c = super.prepareRenderer(renderer, row, column);
+                if (row == hoverRow && !isRowSelected(row)) {
+                    c.setBackground(UITheme.PURPLE_LIGHT);
+                } else {
+                    c.setBackground(UITheme.BG);
+                }
+                return c;
+            }
+        };
+        UITheme.styleTable(rentalTable);
+        rentalTable.setRowHeight(28);
+        rentalTable.setIntercellSpacing(new java.awt.Dimension(0, 5));
         rentalTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        
         rentalTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 loadSelectedRowIntoForm();
@@ -325,11 +398,12 @@ public class RentalFrame extends JFrame {
     private JPanel buildButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
 
-        addButton    = new JButton("Add Rental");
-        updateButton = new JButton("Update Rental");
-        returnButton = new JButton("Mark as Returned");
-        clearButton  = new JButton("Clear Form");
-        JButton backButton = new JButton("Back to Main Menu");
+        addButton    = UITheme.roundedButton("Add Rental");
+        updateButton = UITheme.roundedButton("Update Rental");
+        returnButton = UITheme.roundedButton("Mark as Returned");
+        clearButton  = UITheme.roundedButton("Clear Form");
+        JButton backButton = UITheme.roundedButton("Back to Main Menu");
+        panel.setBackground(UITheme.BG);
  
         // -------------------------------------------------------
         // Wire to RentalEngine / RentalDAO

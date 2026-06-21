@@ -3,13 +3,11 @@ package com.vehicle.rental.g11.gui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import com.vehicle.rental.g11.gui.UITheme;
 
 public class MainFrame extends JFrame {
 
-    private static final Color BG           = Color.WHITE;
-    private static final Color PURPLE       = new Color(120, 60, 200);
-    private static final Color PURPLE_HOVER = new Color(100, 40, 180);
-    private static final Color PURPLE_LIGHT = new Color(245, 240, 255);
+    // Colors moved to UITheme
 
     public MainFrame() {
         setTitle("Vehicle Rental System - Dashboard");
@@ -17,7 +15,7 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-        getContentPane().setBackground(BG);
+        getContentPane().setBackground(UITheme.BG);
 
         add(buildHeader(), BorderLayout.NORTH);
         add(buildNavPanel(), BorderLayout.CENTER);
@@ -28,7 +26,7 @@ public class MainFrame extends JFrame {
 
     private JPanel buildHeader() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(PURPLE);
+        panel.setBackground(UITheme.PURPLE);
         panel.setBorder(BorderFactory.createEmptyBorder(18, 30, 18, 30));
 
         JLabel title = new JLabel("Vehicle Rental System");
@@ -36,7 +34,7 @@ public class MainFrame extends JFrame {
         title.setFont(new Font("Arial", Font.BOLD, 22));
 
         JLabel sub = new JLabel("G11  —  Dashboard");
-        sub.setForeground(new Color(210, 190, 255));
+        sub.setForeground(UITheme.HEADER_SUBTEXT);
         sub.setFont(new Font("Arial", Font.PLAIN, 12));
 
         JPanel text = new JPanel(new GridLayout(2, 1, 0, 2));
@@ -49,7 +47,7 @@ public class MainFrame extends JFrame {
 
     private JPanel buildNavPanel() {
         JPanel panel = new JPanel(new GridLayout(2, 1, 0, 20));
-        panel.setBackground(PURPLE_LIGHT);
+        panel.setBackground(UITheme.PURPLE_LIGHT);
         panel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
 
         JPanel row1 = new JPanel(new GridLayout(1, 3, 20, 0));
@@ -58,15 +56,18 @@ public class MainFrame extends JFrame {
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         row2.setOpaque(false);
 
-        JButton vehicleBtn  = makeNavButton("Vehicles");
-        JButton customerBtn = makeNavButton("Customers");
-        JButton rentalBtn   = makeNavButton("Rentals");
-        JButton reportBtn   = makeNavButton("Reports");
+        JButton vehicleBtn  = UITheme.roundedButton("Vehicles");
+        JButton customerBtn = UITheme.roundedButton("Customers");
+        JButton rentalBtn   = UITheme.roundedButton("Rentals");
+        JButton reportBtn   = UITheme.roundedButton("Reports");
         JButton logoutBtn   = makeLogoutButton("Logout");
 
-        Dimension btnSize = new Dimension(220, 164);
-        reportBtn.setPreferredSize(btnSize);
-        logoutBtn.setPreferredSize(btnSize);
+        // Apply uniform navigation button size
+        vehicleBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
+        customerBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
+        rentalBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
+        reportBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
+        logoutBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
 
         vehicleBtn.addActionListener(e -> {
             setVisible(false);
@@ -101,53 +102,10 @@ public class MainFrame extends JFrame {
         return panel;
     }
 
-    private JButton makeNavButton(String text) {
-        JButton btn = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getModel().isRollover() ? PURPLE_HOVER : PURPLE);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 16));
-        btn.setHorizontalAlignment(SwingConstants.CENTER);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setContentAreaFilled(false);
-        btn.setOpaque(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
-    }
+    // Rounded button creation delegated to UITheme
 
     private JButton makeLogoutButton(String text) {
-        Color red      = new Color(210, 50, 50);
-        Color redHover = new Color(180, 30, 30);
-
-        JButton btn = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getModel().isRollover() ? redHover : red);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 14, 14);
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 16));
-        btn.setHorizontalAlignment(SwingConstants.CENTER);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setContentAreaFilled(false);
-        btn.setOpaque(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return btn;
+        return UITheme.roundedButton(text, UITheme.LOGOUT, UITheme.LOGOUT_HOVER);
     }
 
     private void showComingSoon(String name) {
@@ -158,10 +116,10 @@ public class MainFrame extends JFrame {
 
     private JPanel buildFooter() {
         JPanel panel = new JPanel();
-        panel.setBackground(BG);
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
         JLabel label = new JLabel("Vehicle Rental System © G11");
-        label.setForeground(new Color(180, 150, 210));
+        label.setForeground(UITheme.TEXT_MUTED);
         label.setFont(new Font("Arial", Font.PLAIN, 10));
         panel.add(label);
         return panel;

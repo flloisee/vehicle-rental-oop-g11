@@ -8,6 +8,7 @@ import com.vehicle.rental.g11.model.VehicleStatus;
 
 import javax.swing.*;
 import java.awt.*;
+import com.vehicle.rental.g11.gui.UITheme;
 
 public class VehicleFormPanel extends JPanel {
 
@@ -32,6 +33,7 @@ public class VehicleFormPanel extends JPanel {
 
         add(new JLabel("Type:"));
         typeBox = new JComboBox<>(new String[]{"Car", "Motorcycle", "Truck"});
+        UITheme.styleComboBox(typeBox);
         add(typeBox);
 
         add(new JLabel("Plate Number (max 7 chars):"));
@@ -44,6 +46,7 @@ public class VehicleFormPanel extends JPanel {
 
         add(new JLabel("Status:"));
         statusBox = new JComboBox<>(VehicleStatus.values());
+        UITheme.styleComboBox(statusBox);
         add(statusBox);
 
         saveButton = new JButton("Save");

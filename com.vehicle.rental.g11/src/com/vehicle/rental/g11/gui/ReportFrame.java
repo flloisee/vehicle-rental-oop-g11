@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import com.vehicle.rental.g11.gui.UITheme;
 
 public class ReportFrame extends JFrame {
 
@@ -27,12 +28,19 @@ public class ReportFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(UITheme.BG);
 
         add(buildStatsPanel(), BorderLayout.NORTH);
         add(buildOverduePanel(), BorderLayout.CENTER);
         add(buildRefreshPanel(), BorderLayout.SOUTH);
 
         loadReports();
+addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                ReportFrame.this.mainFrame.setVisible(true);
+            }
+        });
         setVisible(true);
     }
 
@@ -41,15 +49,16 @@ public class ReportFrame extends JFrame {
     // -------------------------------------------------------
     private JPanel buildStatsPanel() {
         JPanel panel = new JPanel(new GridLayout(1, 3, 16, 0));
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createEmptyBorder(16, 16, 8, 16));
 
-        totalRevenueLabel = makeValueLabel("Loading...", new Color(34, 139, 34));
-        activeRentalsLabel = makeValueLabel("Loading...", new Color(30, 30, 180));
-        overdueLabel = makeValueLabel("Loading...", new Color(180, 30, 30));
+        totalRevenueLabel = makeValueLabel("Loading...", UITheme.ACCENT);
+        activeRentalsLabel = makeValueLabel("Loading...", UITheme.ACCENT);
+        overdueLabel = makeValueLabel("Loading...", UITheme.ACCENT);
 
-        panel.add(makeStatCard("Total Revenue", totalRevenueLabel, new Color(34, 139, 34)));
-        panel.add(makeStatCard("Active Rentals", activeRentalsLabel, new Color(30, 30, 180)));
-        panel.add(makeStatCard("Overdue", overdueLabel, new Color(180, 30, 30)));
+        panel.add(makeStatCard("Total Revenue", totalRevenueLabel, UITheme.SUCCESS));
+        panel.add(makeStatCard("Active Rentals", activeRentalsLabel, UITheme.INFO));
+        panel.add(makeStatCard("Overdue", overdueLabel, UITheme.WARNING));
 
         return panel;
     }
@@ -57,9 +66,11 @@ public class ReportFrame extends JFrame {
     private JPanel makeStatCard(String title, JLabel valueLabel, Color accent) {
         JPanel card = new JPanel(new GridLayout(2, 1));
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(accent, 2),
+            BorderFactory.createLineBorder(UITheme.ACCENT, 2),
             BorderFactory.createEmptyBorder(10, 14, 10, 14)
         ));
+        // Set card background to match theme's card background
+        card.setBackground(UITheme.BG_CARD);
 
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -83,6 +94,7 @@ public class ReportFrame extends JFrame {
     // -------------------------------------------------------
     private JPanel buildOverduePanel() {
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createTitledBorder("Overdue Rentals"));
 
         String[] columns = {"Rental ID", "Customer ID", "Customer Name", "Vehicle ID", "Vehicle Brand", "Vehicle Model",
@@ -94,7 +106,41 @@ public class ReportFrame extends JFrame {
             }
         };
 
-        overdueTable = new JTable(overdueTableModel);
+        overdueTable = new JTable(overdueTableModel) {
+            private int hoverRow = -1;
+            {
+                addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                    @Override
+                    public void mouseMoved(java.awt.event.MouseEvent e) {
+                        int row = rowAtPoint(e.getPoint());
+                        if (row != hoverRow) {
+                            hoverRow = row;
+                            repaint();
+                        }
+                    }
+                });
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        hoverRow = -1;
+                        repaint();
+                    }
+                });
+            }
+            @Override
+            public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                java.awt.Component c = super.prepareRenderer(renderer, row, column);
+                if (row == hoverRow && !isRowSelected(row)) {
+                    c.setBackground(UITheme.PURPLE_LIGHT);
+                } else {
+                    c.setBackground(UITheme.BG);
+                }
+                return c;
+            }
+        };
+        UITheme.styleTable(overdueTable);
+        overdueTable.setRowHeight(28);
+        overdueTable.setIntercellSpacing(new java.awt.Dimension(0, 5));
         overdueTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.add(new JScrollPane(overdueTable), BorderLayout.CENTER);
 
@@ -106,14 +152,15 @@ public class ReportFrame extends JFrame {
     // -------------------------------------------------------
     private JPanel buildRefreshPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton refreshBtn = new JButton("Refresh Reports");
+        JButton refreshBtn = UITheme.roundedButton("Refresh Reports");
         refreshBtn.addActionListener(e -> loadReports());
         
-        JButton backBtn = new JButton("Back to Main Menu");
+        JButton backBtn = UITheme.roundedButton("Back to Main Menu");
         backBtn.addActionListener(e -> {
             dispose();
             mainFrame.setVisible(true);
         });
+        panel.setBackground(UITheme.BG);
         
         panel.add(refreshBtn);
         panel.add(backBtn);

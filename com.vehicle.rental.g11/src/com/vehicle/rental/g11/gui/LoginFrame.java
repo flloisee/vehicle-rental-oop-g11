@@ -4,21 +4,14 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
+import com.vehicle.rental.g11.gui.UITheme;
 import com.vehicle.rental.g11.dao.CustomerDAO;
 import com.vehicle.rental.g11.model.Customer;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 
 public class LoginFrame extends JFrame {
 
-    // Colors
-    private static final Color BG_DARK      = new Color(255, 255, 255);  // white
-    private static final Color BG_CARD      = new Color(250, 248, 255);  // soft white
-    private static final Color ACCENT       = new Color(120, 60, 200);   // purple
-    private static final Color ACCENT_HOVER = new Color(100, 40, 180);
-    private static final Color TEXT_PRIMARY  = new Color(30, 10, 60);    // dark purple-black
-    private static final Color TEXT_MUTED    = new Color(130, 100, 170); // muted purple
-    private static final Color FIELD_BG     = new Color(245, 240, 255);  // light purple tint
-    private static final Color FIELD_BORDER = new Color(200, 180, 230);  // soft purple border
+    // Colours are provided by UITheme
 
     // Login fields
     private JTextField     emailField;
@@ -43,7 +36,7 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
         setLayout(new BorderLayout());
-        getContentPane().setBackground(BG_DARK);
+        getContentPane().setBackground(UITheme.BG);
 
         add(buildHeader(),  BorderLayout.NORTH);
         add(buildCenter(),  BorderLayout.CENTER);
@@ -57,7 +50,7 @@ public class LoginFrame extends JFrame {
     private JPanel buildHeader() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(BG_DARK);
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
 
         // Icon circle
@@ -65,7 +58,7 @@ public class LoginFrame extends JFrame {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(ACCENT);
+                g2.setColor(UITheme.ACCENT);
                 g2.fillOval(0, 0, getWidth(), getHeight());
                 g2.dispose();
                 super.paintComponent(g);
@@ -78,12 +71,12 @@ public class LoginFrame extends JFrame {
         icon.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel title = new JLabel("Vehicle Rental System", SwingConstants.CENTER);
-        title.setForeground(TEXT_PRIMARY);
+        title.setForeground(UITheme.TEXT_PRIMARY);
         title.setFont(new Font("Arial", Font.BOLD, 20));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel sub = new JLabel("G11  —  Please log in to continue", SwingConstants.CENTER);
-        sub.setForeground(TEXT_MUTED);
+        sub.setForeground(UITheme.TEXT_MUTED);
         sub.setFont(new Font("Arial", Font.PLAIN, 12));
         sub.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -100,7 +93,7 @@ public class LoginFrame extends JFrame {
 
     private JPanel buildCenter() {
         JPanel outer = new JPanel(new BorderLayout());
-        outer.setBackground(BG_DARK);
+        outer.setBackground(UITheme.BG);
         outer.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
 
         outer.add(buildTabBar(),   BorderLayout.NORTH);
@@ -111,8 +104,8 @@ public class LoginFrame extends JFrame {
 
     private JPanel buildTabBar() {
         JPanel bar = new JPanel(new GridLayout(1, 2, 0, 0));
-        bar.setBackground(BG_CARD);
-        bar.setBorder(new MatteBorder(1, 1, 0, 1, FIELD_BORDER));
+        bar.setBackground(UITheme.BG_CARD);
+        bar.setBorder(new MatteBorder(1, 1, 0, 1, UITheme.FIELD_BORDER));
 
         tabLogin    = makeTabButton("Login",    true);
         tabRegister = makeTabButton("Register", false);
@@ -133,16 +126,26 @@ public class LoginFrame extends JFrame {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.setOpaque(true);
         applyTabStyle(btn, active);
+        // Hover effect for inactive tabs
+        final boolean isActive = active;
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (!isActive) btn.setBackground(UITheme.ACCENT_HOVER);
+            }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                if (!isActive) btn.setBackground(UITheme.BG_CARD);
+            }
+        });
         return btn;
     }
 
     private void applyTabStyle(JButton btn, boolean active) {
         if (active) {
-            btn.setBackground(ACCENT);
+            btn.setBackground(UITheme.ACCENT);
             btn.setForeground(Color.WHITE);
         } else {
-            btn.setBackground(BG_CARD);
-            btn.setForeground(TEXT_MUTED);
+            btn.setBackground(UITheme.BG_CARD);
+            btn.setForeground(UITheme.TEXT_MUTED);
         }
     }
 
@@ -155,8 +158,8 @@ public class LoginFrame extends JFrame {
     private JPanel buildCardPanel() {
         cardLayout = new CardLayout();
         cardPanel  = new JPanel(cardLayout);
-        cardPanel.setBackground(BG_CARD);
-        cardPanel.setBorder(new MatteBorder(0, 1, 1, 1, FIELD_BORDER));
+        cardPanel.setBackground(UITheme.BG_CARD);
+        cardPanel.setBorder(new MatteBorder(0, 1, 1, 1, UITheme.FIELD_BORDER));
 
         cardPanel.add(buildLoginCard(),    "login");
         cardPanel.add(buildRegisterCard(), "register");
@@ -168,7 +171,7 @@ public class LoginFrame extends JFrame {
 
     private JPanel buildLoginCard() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(BG_CARD);
+        panel.setBackground(UITheme.BG_CARD);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 30, 24, 30));
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -214,7 +217,7 @@ public class LoginFrame extends JFrame {
 
     private JPanel buildRegisterCard() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(BG_CARD);
+        panel.setBackground(UITheme.BG_CARD);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -274,10 +277,10 @@ public class LoginFrame extends JFrame {
 
     private JPanel buildFooter() {
         JPanel panel = new JPanel();
-        panel.setBackground(BG_DARK);
+        panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 12, 0));
         JLabel label = new JLabel("Vehicle Rental System © G11");
-        label.setForeground(new Color(180, 150, 210));
+        label.setForeground(UITheme.TEXT_MUTED);
         label.setFont(new Font("Arial", Font.PLAIN, 10));
         panel.add(label);
         return panel;
@@ -287,69 +290,28 @@ public class LoginFrame extends JFrame {
 
     private JLabel makeLabel(String text) {
         JLabel lbl = new JLabel(text);
-        lbl.setForeground(TEXT_MUTED);
+        lbl.setForeground(UITheme.TEXT_MUTED);
         lbl.setFont(new Font("Arial", Font.PLAIN, 12));
         return lbl;
     }
 
     private JTextField makeTextField() {
         JTextField f = new JTextField();
-        styleField(f);
+        UITheme.styleField(f);
         return f;
     }
 
     private JPasswordField makePasswordField() {
         JPasswordField f = new JPasswordField();
-        styleField(f);
+        UITheme.styleField(f);
         return f;
     }
 
-    private void styleField(JTextField f) {
-        f.setBackground(FIELD_BG);
-        f.setForeground(TEXT_PRIMARY);
-        f.setCaretColor(TEXT_PRIMARY);
-        f.setFont(new Font("Arial", Font.PLAIN, 13));
-        f.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(FIELD_BORDER, 1, true),
-            BorderFactory.createEmptyBorder(7, 10, 7, 10)
-        ));
-        f.setPreferredSize(new Dimension(f.getPreferredSize().width, 32));
-
-        // Highlight border on focus
-        f.addFocusListener(new FocusAdapter() {
-            @Override public void focusGained(FocusEvent e) {
-                f.setBorder(BorderFactory.createCompoundBorder(
-                    new LineBorder(ACCENT, 1, true),
-                    BorderFactory.createEmptyBorder(7, 10, 7, 10)
-                ));
-            }
-            @Override public void focusLost(FocusEvent e) {
-                f.setBorder(BorderFactory.createCompoundBorder(
-                    new LineBorder(FIELD_BORDER, 1, true),
-                    BorderFactory.createEmptyBorder(7, 10, 7, 10)
-                ));
-            }
-        });
-    }
+    // Field styling delegated to UITheme.styleField
 
     private JButton makeAccentButton(String text) {
-        JButton btn = new JButton(text) {
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getModel().isRollover() ? ACCENT_HOVER : ACCENT);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 14));
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setContentAreaFilled(false);
-        btn.setOpaque(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton btn = UITheme.roundedButton(text);
+        // Adjust height to match original accent button size
         btn.setPreferredSize(new Dimension(btn.getPreferredSize().width, 40));
         return btn;
     }

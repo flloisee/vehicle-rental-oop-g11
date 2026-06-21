@@ -11,6 +11,7 @@ import javax.swing.*;
 
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import com.vehicle.rental.g11.gui.UITheme;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ public class VehicleFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(UITheme.BG);
 
         add(buildFormPanel(), BorderLayout.NORTH);
         add(buildTablePanel(), BorderLayout.CENTER);
@@ -50,6 +52,12 @@ public class VehicleFrame extends JFrame {
  
         setupSearchHandler();
         loadVehicles();
+addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                VehicleFrame.this.mainFrame.setVisible(true);
+            }
+        });
         setVisible(true);
     }
 
@@ -59,30 +67,54 @@ public class VehicleFrame extends JFrame {
     // -------------------------------------------------------
     private JPanel buildFormPanel() {
         JPanel panel = new JPanel(new GridLayout(3, 4, 8, 8));
-        panel.setBorder(BorderFactory.createTitledBorder("Vehicle Details"));
+        panel.setBackground(UITheme.BG);
+        // Styled titled border matching theme
+        javax.swing.border.TitledBorder titled = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(UITheme.ACCENT, 1), "Vehicle Details");
+        titled.setTitleColor(UITheme.TEXT_PRIMARY);
+        panel.setBorder(titled);
 
-        panel.add(new JLabel("Brand:"));
+        JLabel lbl;
+        lbl = new JLabel("Brand:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         brandField = new JTextField();
+        UITheme.styleField(brandField);
         panel.add(brandField);
 
-        panel.add(new JLabel("Model:"));
+        lbl = new JLabel("Model:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         modelField = new JTextField();
+        UITheme.styleField(modelField);
         panel.add(modelField);
 
-        panel.add(new JLabel("Type:"));
+        lbl = new JLabel("Type:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         typeBox = new JComboBox<>(new String[]{"Car", "Motorcycle", "Truck"});
+        UITheme.styleComboBox(typeBox);
         panel.add(typeBox);
 
-        panel.add(new JLabel("Plate Number (max 7):"));
+        lbl = new JLabel("Plate Number (max 7):");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         plateField = new JTextField();
+        UITheme.styleField(plateField);
         panel.add(plateField);
 
-        panel.add(new JLabel("Daily Rate:"));
+        lbl = new JLabel("Daily Rate:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         rateField = new JTextField();
+        UITheme.styleField(rateField);
         panel.add(rateField);
 
-        panel.add(new JLabel("Status:"));
+        lbl = new JLabel("Status:");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         statusBox = new JComboBox<>(VehicleStatus.values());
+        UITheme.styleComboBox(statusBox);
         panel.add(statusBox);
 
         return panel;
@@ -93,8 +125,12 @@ public class VehicleFrame extends JFrame {
     // -------------------------------------------------------
     private JPanel buildSearchPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(new JLabel("Search: "));
+        panel.setBackground(UITheme.BG);
+        JLabel lbl = new JLabel("Search: ");
+        lbl.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(lbl);
         searchField = new JTextField(20);
+        UITheme.styleField(searchField);
         panel.add(searchField);
         return panel;
     }
@@ -133,7 +169,44 @@ public class VehicleFrame extends JFrame {
             }
         };
 
-        vehicleTable = new JTable(tableModel);
+        vehicleTable = new JTable(tableModel) {
+            private int hoverRow = -1;
+            {
+                // Track mouse movement to add hover effect
+                addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+                    @Override
+                    public void mouseMoved(java.awt.event.MouseEvent e) {
+                        int row = rowAtPoint(e.getPoint());
+                        if (row != hoverRow) {
+                            hoverRow = row;
+                            repaint();
+                        }
+                    }
+                });
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        hoverRow = -1;
+                        repaint();
+                    }
+                });
+            }
+            @Override
+            public java.awt.Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                java.awt.Component c = super.prepareRenderer(renderer, row, column);
+                // Apply hover background when not selected
+                if (row == hoverRow && !isRowSelected(row)) {
+                    c.setBackground(UITheme.PURPLE_LIGHT);
+                } else {
+                    c.setBackground(UITheme.BG);
+                }
+                return c;
+            }
+        };
+        UITheme.styleTable(vehicleTable);
+        // Modern row height and spacing
+        vehicleTable.setRowHeight(28);
+        vehicleTable.setIntercellSpacing(new java.awt.Dimension(0, 5));
         vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         // When a row is clicked, load it into the form for editing
@@ -152,11 +225,12 @@ public class VehicleFrame extends JFrame {
     // -------------------------------------------------------
     private JPanel buildButtonPanel() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        panel.setBackground(UITheme.BG);
 
-        addButton = new JButton("Add Vehicle");
-        updateButton = new JButton("Update Vehicle");
-        clearButton = new JButton("Clear Form");
-        JButton backButton = new JButton("Back to Main Menu");
+        addButton = UITheme.roundedButton("Add Vehicle");
+        updateButton = UITheme.roundedButton("Update Vehicle");
+        clearButton = UITheme.roundedButton("Clear Form");
+        JButton backButton = UITheme.roundedButton("Back to Main Menu");
  
         addButton.addActionListener(e -> addVehicle());
         updateButton.addActionListener(e -> updateVehicle());
