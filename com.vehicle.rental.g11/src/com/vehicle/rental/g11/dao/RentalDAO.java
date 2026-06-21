@@ -126,20 +126,58 @@ public class RentalDAO {
         return list;
     }
 
+/**
+ * Searches rentals by any combination of customer name parts, vehicle brand, vehicle model,
+ * rental ID, customer ID or vehicle ID. All whitespace‑separated tokens in the query must
+ * match at least one of the searchable columns (order‑independent).
+ *
+ * @param query space‑separated search terms
+ * @return matching rentals
+ * @throws RentalSystemException on DB errors
+ */
     public List<Rentals> searchRentals(String query) throws RentalSystemException {
         List<Rentals> results = new ArrayList<>();
-        String sql = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, v.brand, v.model " +
-                       "FROM Rentals r " +
-                                                 "LEFT JOIN Customers c ON r.customerID = c.customerID " +
-                        "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID " +
-                       "WHERE r.customerID LIKE ? OR CAST(r.vehicleID AS CHAR) LIKE ? OR CAST(r.rentalID AS CHAR) LIKE ?";
-        String wildCardQuery = "%" + query + "%";
+        if (query == null || query.trim().isEmpty()) {
+            return results; // caller will fallback to load all rentals
+        }
+        // Split the query into tokens (ignore extra whitespace)
+        String[] tokens = query.trim().split("\\s+");
+        // Limit token count to avoid excessively large prepared statements (optional)
+        int maxTokens = Math.min(tokens.length, 5);
+
+        String baseSelect = "SELECT r.*, c.first_name, c.middle_name, c.last_name, c.suffix, " +
+                "CONCAT_WS(' ', c.first_name, c.middle_name, c.last_name) as customerName, " +
+                "v.brand, v.model " +
+                "FROM Rentals r " +
+                "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID ";
+        StringBuilder where = new StringBuilder();
+        // For each token we require it to appear in at least one column (AND between tokens)
+        for (int i = 0; i < maxTokens; i++) {
+            if (i > 0) where.append(" AND ");
+            where.append("(");
+            where.append("r.customerID LIKE ? OR ");
+            where.append("CAST(r.vehicleID AS CHAR) LIKE ? OR ");
+            where.append("CAST(r.rentalID AS CHAR) LIKE ? OR ");
+            where.append("c.first_name LIKE ? OR ");
+            where.append("c.middle_name LIKE ? OR ");
+            where.append("c.last_name LIKE ? OR ");
+            where.append("c.suffix LIKE ? OR ");
+            where.append("v.brand LIKE ? OR ");
+            where.append("v.model LIKE ?");
+            where.append(")");
+        }
+        String sql = baseSelect + " WHERE " + where.toString();
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            ps.setString(1, wildCardQuery);
-            ps.setString(2, wildCardQuery);
-            ps.setString(3, wildCardQuery);
-
+            int paramIdx = 1;
+            for (int i = 0; i < maxTokens; i++) {
+                String wildcard = "%" + tokens[i] + "%";
+                // nine columns per token
+                for (int j = 0; j < 9; j++) {
+                    ps.setString(paramIdx++, wildcard);
+                }
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 results.add(mapRow(rs));
