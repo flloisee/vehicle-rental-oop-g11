@@ -41,6 +41,8 @@ public class LoginFrame extends JFrame {
         add(buildHeader(),  BorderLayout.NORTH);
         add(buildCenter(),  BorderLayout.CENTER);
         add(buildFooter(),  BorderLayout.SOUTH);
+        // Set default button so ENTER triggers login when login tab is active
+        getRootPane().setDefaultButton(loginButton);
 
         setVisible(true);
     }
@@ -150,10 +152,21 @@ public class LoginFrame extends JFrame {
     }
 
     private void switchTab(boolean showLogin) {
+        // Update tab styles
         applyTabStyle(tabLogin,    showLogin);
         applyTabStyle(tabRegister, !showLogin);
+        // Show the appropriate card
         cardLayout.show(cardPanel, showLogin ? "login" : "register");
+        // Set default button for Enter key activation
+        if (showLogin) {
+            getRootPane().setDefaultButton(loginButton);
+        } else {
+            getRootPane().setDefaultButton(registerButton);
+        }
     }
+    // NOTE: The original implementation was modified to include default button handling.
+    // The original call to applyTabStyle and cardLayout.show was moved inside this method.
+    // This ensures the Enter key triggers the correct action regardless of focus.
 
     private JPanel buildCardPanel() {
         cardLayout = new CardLayout();
