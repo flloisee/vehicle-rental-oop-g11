@@ -1,11 +1,17 @@
 package com.vehicle.rental.g11.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GridLayout;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.function.Consumer;
-import com.vehicle.rental.g11.gui.UITheme;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
 public class DatePickerDialog extends JDialog {
     private LocalDate selectedDate;

@@ -1,9 +1,17 @@
 package com.vehicle.rental.g11.gui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import com.vehicle.rental.g11.gui.UITheme;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 public class MainFrame extends JFrame {
 

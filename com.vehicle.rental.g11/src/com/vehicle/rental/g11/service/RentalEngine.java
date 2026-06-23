@@ -1,15 +1,15 @@
 package com.vehicle.rental.g11.service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 import com.vehicle.rental.g11.dao.RentalDAO;
 import com.vehicle.rental.g11.dao.VehicleDAO;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Rentals;
 import com.vehicle.rental.g11.model.Vehicle;
 import com.vehicle.rental.g11.model.VehicleStatus;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 public class RentalEngine {
 
@@ -190,5 +190,117 @@ public class RentalEngine {
         return active.stream()
                      .filter(r -> r.getPlannedReturnDate().isBefore(today))
                      .toList();
+    }
+
+    // -------------------------------------------------------
+    // DASHBOARD ANALYTICS METHODS
+    // -------------------------------------------------------
+
+    // Get count of rentals that were returned but not yet paid
+    public int getPendingPaymentsCount() throws RentalSystemException {
+        List<Rentals> all = rentalDAO.getAllRentals();
+        return (int) all.stream()
+                        .filter(r -> r.isReturned() && !isPaid(r))
+                        .count();
+    }
+
+    // Get total unpaid balance from returned but unpaid rentals
+    public double getTotalUnpaidBalance() throws RentalSystemException {
+        List<Rentals> all = rentalDAO.getAllRentals();
+        return all.stream()
+                  .filter(r -> r.isReturned() && !isPaid(r))
+                  .mapToDouble(Rentals::getTotalCost)
+                  .sum();
+    }
+
+    // Get count of rentals happening today
+    public int getTodaysRentalsCount() throws RentalSystemException {
+        List<Rentals> all = rentalDAO.getAllRentals();
+        LocalDate today = LocalDate.now();
+        return (int) all.stream()
+                        .filter(r -> r.getRentalDate().equals(today))
+                        .count();
+    }
+
+    // Get count of overdue rentals today
+    public int getOverdueTodayCount() throws RentalSystemException {
+        return getOverdueRentals().size();
+    }
+
+    // Get the most rented vehicle and its count
+    public String getMostRentedVehicle() throws RentalSystemException {
+        List<Rentals> all = rentalDAO.getAllRentals();
+        return all.stream()
+                  .collect(java.util.stream.Collectors.groupingBy(
+                      r -> r.getVehicleBrand() + " " + r.getVehicleModel(),
+                      java.util.stream.Collectors.counting()
+                  ))
+                  .entrySet().stream()
+                  .max(java.util.Map.Entry.comparingByValue())
+                  .map(e -> e.getKey() + " (" + e.getValue() + " rentals)")
+                  .orElse("No rentals yet");
+    }
+
+    // Get vehicle utilization rate (% of vehicles currently rented)
+    public double getVehicleUtilizationRate() throws RentalSystemException {
+        int totalVehicles = vehicleDAO.getAllVehicles().size();
+        if (totalVehicles == 0) return 0;
+        
+        int rentedVehicles = (int) vehicleDAO.getAllVehicles().stream()
+                                             .filter(v -> v.getStatus() == VehicleStatus.Rented)
+                                             .count();
+        return (rentedVehicles * 100.0) / totalVehicles;
+    }
+
+    // Get top customer by rental count
+    public String getTopCustomer() throws RentalSystemException {
+        List<Rentals> all = rentalDAO.getAllRentals();
+        return all.stream()
+                  .collect(java.util.stream.Collectors.groupingBy(
+                      Rentals::getCustomerName,
+                      java.util.stream.Collectors.counting()
+                  ))
+                  .entrySet().stream()
+                  .max(java.util.Map.Entry.comparingByValue())
+                  .map(e -> e.getKey() + " (" + e.getValue() + " rentals)")
+                  .orElse("No customers yet");
+    }
+
+    // Get average rental duration in days
+    public double getAverageRentalDuration() throws RentalSystemException {
+        List<Rentals> all = rentalDAO.getAllRentals();
+        if (all.isEmpty()) return 0;
+        
+        return all.stream()
+                  .mapToLong(r -> ChronoUnit.DAYS.between(r.getRentalDate(), r.getPlannedReturnDate()))
+                  .average()
+                  .orElse(0);
+    }
+
+    // Determine rental status
+    public String getRentalStatus(Rentals rental) {
+        if (!rental.isReturned()) {
+            LocalDate today = LocalDate.now();
+            if (rental.getPlannedReturnDate().isBefore(today)) {
+                return "OVERDUE";
+            } else {
+                return "ACTIVE";
+            }
+        } else {
+            return isPaid(rental) ? "COMPLETED (PAID)" : "RETURNED (UNPAID)";
+        }
+    }
+
+    // Helper: check if a rental is paid (assuming all returned rentals are marked as paid in real system)
+    // In this simplified version, we'll assume returned rentals are paid unless noted otherwise
+    private boolean isPaid(Rentals rental) {
+        // This is a simplification. In a real system, there would be a separate payments table
+        // For now, we'll assume all returned rentals are eventually paid
+        return true; // This can be enhanced with actual payment tracking
+    }
+
+    // Get all vehicles for utilization calculation
+    public java.util.List<Vehicle> getAllVehicles() throws RentalSystemException {
+        return vehicleDAO.getAllVehicles();
     }
 }

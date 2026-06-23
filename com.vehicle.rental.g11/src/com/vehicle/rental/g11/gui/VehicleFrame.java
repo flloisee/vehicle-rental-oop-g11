@@ -1,20 +1,34 @@
 package com.vehicle.rental.g11.gui;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+
 import com.vehicle.rental.g11.dao.VehicleDAO;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Vehicle;
 import com.vehicle.rental.g11.model.VehicleFactory;
 import com.vehicle.rental.g11.model.VehicleStatus;
 import com.vehicle.rental.g11.service.SearchHandler;
- 
-import javax.swing.*;
-
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
-import com.vehicle.rental.g11.gui.UITheme;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class VehicleFrame extends JFrame {
 
@@ -27,7 +41,7 @@ public class VehicleFrame extends JFrame {
     private JTextField searchField;
     private JComboBox<String> typeBox;
     private JComboBox<VehicleStatus> statusBox;
-    private JButton addButton, updateButton, clearButton;
+    private JButton addButton, updateButton, clearButton, deleteButton;
     private SearchHandler searchHandler;
  
     private int selectedVehicleID = -1; // -1 means no row selected
@@ -237,11 +251,13 @@ addWindowListener(new java.awt.event.WindowAdapter() {
         addButton = UITheme.roundedButton("Add Vehicle");
         updateButton = UITheme.roundedButton("Update Vehicle");
         clearButton = UITheme.roundedButton("Clear Form");
+        deleteButton = UITheme.roundedButton("Delete Vehicle");
         JButton backButton = UITheme.roundedButton("Back to Main Menu");
  
         addButton.addActionListener(e -> addVehicle());
         updateButton.addActionListener(e -> updateVehicle());
         clearButton.addActionListener(e -> clearForm());
+        deleteButton.addActionListener(e -> deleteVehicle());
         backButton.addActionListener(e -> {
             dispose();
             mainFrame.setVisible(true);
@@ -249,6 +265,7 @@ addWindowListener(new java.awt.event.WindowAdapter() {
  
         panel.add(addButton);
         panel.add(updateButton);
+        panel.add(deleteButton);
         panel.add(clearButton);
         panel.add(backButton);
 
@@ -457,6 +474,48 @@ addWindowListener(new java.awt.event.WindowAdapter() {
         }
 
         return true;
+    }
+
+    // -------------------------------------------------------
+    // DELETE VEHICLE
+    // -------------------------------------------------------
+    private void deleteVehicle() {
+        if (selectedVehicleID == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a vehicle to permanently delete.",
+                                          "Selection Required", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to PERMANENTLY DELETE this vehicle?\nThis action cannot be undone!",
+            "Confirm Permanent Delete", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            if (vehicleDAO.hasAssociatedRentals(selectedVehicleID)) {
+                JOptionPane.showMessageDialog(this,
+                    "This vehicle has rental history and cannot be deleted because the database enforces referential integrity.\n" +
+                    "Please remove or reassign associated rentals first.",
+                    "Delete Not Allowed", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (vehicleDAO.deleteVehicle(selectedVehicleID)) {
+                JOptionPane.showMessageDialog(this, "Vehicle permanently deleted successfully!",
+                                              "Delete Success", JOptionPane.INFORMATION_MESSAGE);
+                clearForm();
+                loadVehicles();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to delete vehicle. (Vehicle not found)",
+                                              "Delete Failed", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (RentalSystemException ex) {
+            JOptionPane.showMessageDialog(this, "Error deleting vehicle: " + ex.getMessage(),
+                                          "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     // -------------------------------------------------------

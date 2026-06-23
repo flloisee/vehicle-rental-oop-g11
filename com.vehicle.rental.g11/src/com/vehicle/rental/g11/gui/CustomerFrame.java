@@ -6,8 +6,8 @@ import java.awt.GridLayout;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.JComponent;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,7 +23,6 @@ import com.vehicle.rental.g11.dao.CustomerDAO;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Customer;
 import com.vehicle.rental.g11.service.SearchHandler;
-import com.vehicle.rental.g11.gui.UITheme;
 
 public class CustomerFrame extends JFrame {
 

@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import com.vehicle.rental.g11.exception.RentalSystemException;
 
 import com.vehicle.rental.g11.db.DatabaseConnection;
+import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Vehicle;
 import com.vehicle.rental.g11.model.VehicleStatus;
 
@@ -142,6 +142,59 @@ public class VehicleDAO {
             }
         } catch (SQLException e) {
             throw new com.vehicle.rental.g11.exception.RentalSystemException("Search failed: " + e.getMessage(), e);
+        }
+        return results;
+    }
+
+    // ----------- DELETE -----------
+    public boolean deleteVehicle(int vehicleID) throws com.vehicle.rental.g11.exception.RentalSystemException {
+        String sql = "DELETE FROM Vehicles WHERE vehicleID = ?";
+
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setInt(1, vehicleID);
+            int rows = ps.executeUpdate();
+            return rows > 0;
+
+        } catch (SQLException e) {
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to delete vehicle: " + e.getMessage(), e);
+        }
+    }
+
+    // ----------- ASSOCIATED RENTAL CHECK -----------
+    public boolean hasAssociatedRentals(int vehicleID) throws com.vehicle.rental.g11.exception.RentalSystemException {
+        String sql = "SELECT 1 FROM Rentals WHERE vehicleID = ? LIMIT 1";
+
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setInt(1, vehicleID);
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to check rentals for vehicle: " + e.getMessage(), e);
+        }
+    }
+
+    // ----------- GET ALL VEHICLES -----------
+    public java.util.List<Vehicle> getAllVehicles() throws com.vehicle.rental.g11.exception.RentalSystemException {
+        java.util.List<Vehicle> results = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM Vehicles ORDER BY vehicleID ASC";
+
+        try (PreparedStatement ps = getConn().prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                String type = rs.getString("type");
+                results.add(com.vehicle.rental.g11.model.VehicleFactory.createVehicle(
+                        type,
+                        rs.getInt("vehicleID"),
+                        rs.getString("brand"),
+                        rs.getString("model"),
+                        rs.getString("plate_number"),
+                        rs.getDouble("daily_rate"),
+                        VehicleStatus.fromDbValue(rs.getString("status"))
+                ));
+            }
+        } catch (SQLException e) {
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Failed to get all vehicles: " + e.getMessage(), e);
         }
         return results;
     }
