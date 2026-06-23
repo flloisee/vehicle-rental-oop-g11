@@ -93,6 +93,18 @@ dot_clean .
 - [ ] **Documentation:** Final PDF (ERD, UML, Flowcharts, Screenshots)
 
 ### Project Progress
+
+### Known Issues / Gaps
+- **Default admin account** not seeded; login requires an admin user.
+- **Vehicle delete** UI and DAO method are missing.
+- `archiveCustomer` method references a non‑existent `is_active` column in the schema.
+- No formal documentation PDF (title page, ERD, flowcharts, screenshots).
+- No JUnit tests for business logic or DAOs.
+- No logging framework (SLF4J/Logback) configured.
+- `.env` file not ignored by Git, exposing credentials.
+- `DatabaseConnection` singleton is not thread‑safe.
+- `PasswordUtil` holds a static Argon2 instance, potential concurrency issue.
+- Input validation could be stronger (email format, plate number regex).
 `[################----]` 81%
 
 ## Task Delegation
