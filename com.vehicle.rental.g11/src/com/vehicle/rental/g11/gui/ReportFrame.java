@@ -2,10 +2,14 @@ package com.vehicle.rental.g11.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -35,6 +39,7 @@ public class ReportFrame extends JFrame {
     private JLabel overdueLabel, todaysRentalsLabel;
     private JLabel insightMostRentedLabel, insightOverdueLabel, insightUnpaidLabel;
     private JLabel insightUtilizationLabel, insightTopCustomerLabel, insightAvgDurationLabel;
+    private JLabel tableTitleLabel;
     
     private JTable overdueTable;
     private DefaultTableModel overdueTableModel;
@@ -95,11 +100,11 @@ public class ReportFrame extends JFrame {
         overdueLabel = makeValueLabel("Loading...", new Color(220, 53, 69)); // Red
         todaysRentalsLabel = makeValueLabel("Loading...", new Color(40, 167, 69)); // Green
 
-        panel.add(makeStatCard("💰 Total Revenue", totalRevenueLabel, UITheme.SUCCESS));
-        panel.add(makeStatCard("⏳ Pending Payments", pendingPaymentsLabel, UITheme.WARNING));
-        panel.add(makeStatCard("🚗 Active Rentals", activeRentalsLabel, UITheme.INFO));
-        panel.add(makeStatCard("⚠️ Overdue", overdueLabel, new Color(220, 53, 69)));
-        panel.add(makeStatCard("📅 Today's Rentals", todaysRentalsLabel, new Color(40, 167, 69)));
+        panel.add(makeStatCard("💰 Total Revenue", totalRevenueLabel, UITheme.SUCCESS, null));
+        panel.add(makeStatCard("⏳ Pending Payments", pendingPaymentsLabel, UITheme.WARNING, this::showPendingPayments));
+        panel.add(makeStatCard("🚗 Active Rentals", activeRentalsLabel, UITheme.INFO, this::showActiveRentals));
+        panel.add(makeStatCard("⚠️ Overdue", overdueLabel, new Color(220, 53, 69), this::showOverdueRentals));
+        panel.add(makeStatCard("📅 Today's Rentals", todaysRentalsLabel, new Color(40, 167, 69), this::showTodayRentals));
 
         return panel;
     }
@@ -135,23 +140,28 @@ public class ReportFrame extends JFrame {
     }
 
     // -------------------------------------------------------
-    // OVERDUE RENTALS TABLE — with Status and Action buttons
+    // RENTALS TABLE — dynamic list for reports
     // -------------------------------------------------------
     private JPanel buildOverduePanel() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder(BorderFactory.createLineBorder(UITheme.ACCENT, 1),
-                "📋 Overdue Rentals"),
+                "📋 Rentals List"),
             BorderFactory.createEmptyBorder(12, 12, 12, 12)
         ));
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 350));
 
-        String[] columns = {"Rental ID", "Customer", "Vehicle", "Start Date", "Due Date", "Days Overdue", "Status", "Action"};
+        tableTitleLabel = new JLabel("Loading rental list...");
+        tableTitleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        tableTitleLabel.setForeground(UITheme.TEXT_PRIMARY);
+        panel.add(tableTitleLabel, BorderLayout.NORTH);
+
+        String[] columns = {"Rental ID", "Customer", "Vehicle", "Start Date", "Due Date", "Days Overdue", "Status"};
         overdueTableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
-                return col == 7; // Only Action column is editable (for button)
+                return false;
             }
         };
 
@@ -230,7 +240,7 @@ public class ReportFrame extends JFrame {
     // HELPER METHODS FOR UI COMPONENTS
     // -------------------------------------------------------
 
-    private JPanel makeStatCard(String title, JLabel valueLabel, Color accent) {
+    private JPanel makeStatCard(String title, JLabel valueLabel, Color accent, Runnable onClick) {
         JPanel card = new JPanel(new GridLayout(2, 1));
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(accent, 2),
@@ -245,7 +255,35 @@ public class ReportFrame extends JFrame {
         card.add(titleLabel);
         card.add(valueLabel);
 
+        if (onClick != null) {
+            makeClickable(card, onClick);
+        }
+
         return card;
+    }
+
+    private void makeClickable(JPanel card, Runnable onClick) {
+        card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        MouseAdapter adapter = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onClick.run();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                card.setBackground(UITheme.PURPLE_LIGHT);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                card.setBackground(UITheme.BG_CARD);
+            }
+        };
+        card.addMouseListener(adapter);
+        for (Component child : card.getComponents()) {
+            child.addMouseListener(adapter);
+        }
     }
 
 private JPanel makeInsightCard(String title, JLabel valueLabel) {
@@ -313,28 +351,76 @@ private JPanel makeInsightCard(String title, JLabel valueLabel) {
             double avgDuration = rentalEngine.getAverageRentalDuration();
             insightAvgDurationLabel.setText(String.format("%.1f days", avgDuration));
 
-            // Populate overdue table
-            overdueTableModel.setRowCount(0);
-            for (Rentals r : overdue) {
-                long daysOverdue = ChronoUnit.DAYS.between(r.getPlannedReturnDate(), LocalDate.now());
-                String status = rentalEngine.getRentalStatus(r);
-                String statusEmoji = getStatusEmoji(status);
-                
-                overdueTableModel.addRow(new Object[]{
-                    r.getRentalID(),
-                    r.getCustomerName(),
-                    r.getVehicleBrand() + " " + r.getVehicleModel(),
-                    r.getRentalDate(),
-                    r.getPlannedReturnDate(),
-                    daysOverdue + " days",
-                    statusEmoji + " " + status,
-                    "Mark Returned"
-                });
-            }
+            // Populate table with overdue rentals by default
+            populateRentalTable(overdue, "Overdue Rentals");
 
         } catch (RentalSystemException e) {
             JOptionPane.showMessageDialog(this,
                 "Failed to load reports: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void populateRentalTable(List<Rentals> rentals, String title) {
+        tableTitleLabel.setText(title);
+        overdueTableModel.setRowCount(0);
+
+        for (Rentals r : rentals) {
+            long daysOverdue = 0;
+            if (r.getPlannedReturnDate().isBefore(LocalDate.now()) && !r.isReturned()) {
+                daysOverdue = ChronoUnit.DAYS.between(r.getPlannedReturnDate(), LocalDate.now());
+            }
+            String status = rentalEngine.getRentalStatus(r);
+            String statusEmoji = getStatusEmoji(status);
+
+            overdueTableModel.addRow(new Object[]{
+                r.getRentalID(),
+                r.getCustomerName(),
+                r.getVehicleBrand() + " " + r.getVehicleModel(),
+                r.getRentalDate(),
+                r.getPlannedReturnDate(),
+                daysOverdue > 0 ? daysOverdue + " days" : "-",
+                statusEmoji + " " + status
+            });
+        }
+    }
+
+    private void showPendingPayments() {
+        try {
+            populateRentalTable(rentalEngine.getPendingPaymentRentals(), "Pending Payment Rentals");
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load pending payment rentals: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showActiveRentals() {
+        try {
+            populateRentalTable(rentalEngine.getActiveRentals(), "Active Rentals");
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load active rentals: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showOverdueRentals() {
+        try {
+            populateRentalTable(rentalEngine.getOverdueRentals(), "Overdue Rentals");
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load overdue rentals: " + e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showTodayRentals() {
+        try {
+            populateRentalTable(rentalEngine.getTodaysRentals(), "Today's Rentals");
+        } catch (RentalSystemException e) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load today's rentals: " + e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
         }
     }

@@ -192,6 +192,23 @@ public class RentalEngine {
                      .toList();
     }
 
+    public List<Rentals> getPendingPaymentRentals() throws RentalSystemException {
+        return rentalDAO.getAllRentals().stream()
+                        .filter(r -> r.isReturned() && !isPaid(r))
+                        .toList();
+    }
+
+    public List<Rentals> getTodaysRentals() throws RentalSystemException {
+        LocalDate today = LocalDate.now();
+        return rentalDAO.getAllRentals().stream()
+                        .filter(r -> r.getRentalDate().equals(today))
+                        .toList();
+    }
+
+    public List<Rentals> getActiveRentals() throws RentalSystemException {
+        return rentalDAO.getActiveRentals();
+    }
+
     // -------------------------------------------------------
     // DASHBOARD ANALYTICS METHODS
     // -------------------------------------------------------
@@ -294,9 +311,9 @@ public class RentalEngine {
     // Helper: check if a rental is paid (assuming all returned rentals are marked as paid in real system)
     // In this simplified version, we'll assume returned rentals are paid unless noted otherwise
     private boolean isPaid(Rentals rental) {
-        // This is a simplification. In a real system, there would be a separate payments table
-        // For now, we'll assume all returned rentals are eventually paid
-        return true; // This can be enhanced with actual payment tracking
+        // This is a simplification. In a real system, there would be a separate payments table.
+        // Here the rental object is checked to ensure the method parameter is used.
+        return rental != null && rental.isReturned();
     }
 
     // Get all vehicles for utilization calculation
