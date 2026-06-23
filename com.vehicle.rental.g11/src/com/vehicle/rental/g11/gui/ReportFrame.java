@@ -63,12 +63,11 @@ public class ReportFrame extends JFrame {
         mainPanel.add(buildInsightsPanel());
         mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(buildOverduePanel());
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(buildRefreshPanel());
 
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
+        add(buildRefreshPanel(), BorderLayout.SOUTH);
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -213,7 +212,7 @@ public class ReportFrame extends JFrame {
         panel.setBackground(UITheme.BG);
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
-        JButton refreshBtn = UITheme.roundedButton("🔄 Refresh Reports");
+        JButton refreshBtn = UITheme.roundedButton("Refresh Reports");
         refreshBtn.addActionListener(e -> loadReports());
         
         JButton backBtn = UITheme.roundedButton("← Back to Main Menu");
