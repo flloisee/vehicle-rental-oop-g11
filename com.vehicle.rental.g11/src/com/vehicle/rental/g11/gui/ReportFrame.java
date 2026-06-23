@@ -116,7 +116,7 @@ public class ReportFrame extends JFrame {
                 "📈 Insights & Analytics"),
             BorderFactory.createEmptyBorder(12, 12, 12, 12)
         ));
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
+        // panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140)); // Removed to allow proper sizing
 
         insightMostRentedLabel = makeValueLabel("Loading...", UITheme.ACCENT);
         insightOverdueLabel = makeValueLabel("Loading...", UITheme.WARNING);
@@ -249,23 +249,27 @@ public class ReportFrame extends JFrame {
         return card;
     }
 
-    private JPanel makeInsightCard(String title, JLabel valueLabel) {
-        JPanel card = new JPanel(new GridLayout(2, 1));
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(UITheme.ACCENT, 1),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        ));
-        card.setBackground(UITheme.BG_CARD);
-
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-        titleLabel.setForeground(Color.GRAY);
-
-        card.add(titleLabel);
-        card.add(valueLabel);
-
-        return card;
-    }
+private JPanel makeInsightCard(String title, JLabel valueLabel) {
+    JPanel card = new JPanel();
+    card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+    card.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(UITheme.ACCENT, 1),
+        BorderFactory.createEmptyBorder(10, 10, 10, 10)
+    ));
+    card.setBackground(UITheme.BG_CARD);
+    
+    JLabel titleLabel = new JLabel(title);
+    titleLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+    titleLabel.setForeground(Color.GRAY);
+    titleLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+    
+    valueLabel.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+    
+    card.add(titleLabel);
+    card.add(valueLabel);
+    
+    return card;
+}
 
     private JLabel makeValueLabel(String value, Color accent) {
         JLabel valueLabel = new JLabel(value);
