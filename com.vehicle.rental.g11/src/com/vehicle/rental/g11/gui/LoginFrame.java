@@ -25,6 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
 
@@ -49,6 +50,8 @@ public class LoginFrame extends JFrame {
     // Tab state
 
     private JButton tabLogin, tabRegister;
+    // Email validation pattern
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.%+-]+@[\\w.-]+\\.[A-Za-z]{2,6}$");
     private CardLayout cardLayout;
     private JPanel cardPanel;
 
@@ -344,6 +347,9 @@ public class LoginFrame extends JFrame {
     }
 
     // Field styling delegated to UITheme.styleField
+    private boolean isValidEmail(String email) {
+        return EMAIL_PATTERN.matcher(email).matches();
+    }
 
     private JButton makeAccentButton(String text) {
         JButton btn = UITheme.roundedButton(text);
@@ -361,6 +367,12 @@ public class LoginFrame extends JFrame {
         if (email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "Email and password are required.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (!isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this,
+                "Please enter a valid email address.",
                 "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -400,6 +412,12 @@ public class LoginFrame extends JFrame {
         if (fName.isEmpty() || lName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this,
                 "First Name, Last Name, Email, and Password are required.",
+                "Validation Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (!isValidEmail(email)) {
+            JOptionPane.showMessageDialog(this,
+                "Please enter a valid email address.",
                 "Validation Error", JOptionPane.WARNING_MESSAGE);
             return;
         }
