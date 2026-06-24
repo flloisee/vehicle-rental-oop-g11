@@ -19,6 +19,49 @@
 dot_clean .
 ```
 
+## Database Migration
+
+1. **Create a MySQL database** (if not already created). The schema file is located at:
+   ```text
+   database/schema/vehicle_rental_g11_oop.sql
+   ```
+2. **Load the schema** using the MySQL CLI:
+   ```bash
+   mysql -u YOUR_USER -p < database/schema/vehicle_rental_g11_oop.sql
+   ```
+   Replace `YOUR_USER` with your MySQL username. You will be prompted for the password.
+   - Alternatively, after logging into MySQL, you can run:
+     ```sql
+     SOURCE path/to/vehicle_rental_g11_oop.sql;
+     ```
+3. **Configure connection** by copying the example env file and updating credentials:
+```bash
+# macOS / Linux
+cp com.vehicle.rental.g11/.env.example com.vehicle.rental.g11/.env
+```
+
+```cmd
+:: Windows Command Prompt
+copy com.vehicle.rental.g11\.env.example com.vehicle.rental.g11\.env
+```
+
+```powershell
+# PowerShell
+Copy-Item -Path "com.vehicle.rental.g11\.env.example" -Destination "com.vehicle.rental.g11\.env"
+```
+   Ensure `DB_URL`, `DB_USER`, and `DB_PASSWORD` match your local setup.
+
+### Edited Schema Overview
+
+- **Person**: stores generic person information (`personID`, `first_name`, `middle_initial`, `last_name`, `suffix`, `email`).
+- **Employee**: extends `Person` with a `password` field; `personID` is a foreign key to `Person`.
+- **Customer**: maps a `personID` to a customer role; also references `Person`.
+- **Vehicles**: vehicle inventory with fields `vehicleID`, `brand`, `model`, `type`, `plate_number`, `daily_rate`, and `status` (enum).
+- **Rentals**: rental records linking a `personID` (customer) and `vehicleID` with dates and total cost.
+
+These tables reflect the current relational structure used by the application.
+
+
 ## Development Roadmap
 
 ### Phase 1: Design & Architecture
