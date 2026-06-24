@@ -54,20 +54,15 @@ public class MainFrame extends JFrame {
     }
 
     private JPanel buildNavPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 1, 0, 20));
+        JPanel panel = new JPanel(new GridLayout(2, 3, 20, 20));
         panel.setBackground(UITheme.PURPLE_LIGHT);
         panel.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
-
-        JPanel row1 = new JPanel(new GridLayout(1, 3, 20, 0));
-        row1.setOpaque(false);
-
-        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-        row2.setOpaque(false);
 
         JButton vehicleBtn  = UITheme.roundedButton("Vehicles");
         JButton customerBtn = UITheme.roundedButton("Customers");
         JButton rentalBtn   = UITheme.roundedButton("Rentals");
         JButton reportBtn   = UITheme.roundedButton("Reports");
+        JButton employeeBtn = UITheme.roundedButton("Employees");
         JButton logoutBtn   = makeLogoutButton("Logout");
 
         // Apply uniform navigation button size
@@ -75,6 +70,7 @@ public class MainFrame extends JFrame {
         customerBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
         rentalBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
         reportBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
+        employeeBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
         logoutBtn.setPreferredSize(UITheme.NAV_BTN_SIZE);
 
         vehicleBtn.addActionListener(e -> {
@@ -97,16 +93,22 @@ public class MainFrame extends JFrame {
             catch (Exception ex) { setVisible(true); showComingSoon("Report"); }
         });
 
+        // Employees management button
+        employeeBtn.addActionListener(e -> {
+            setVisible(false);
+            new EmployeeFrame(this);
+        });
+
         logoutBtn.addActionListener(e -> { dispose(); new LoginFrame(); });
 
-        row1.add(vehicleBtn);
-        row1.add(customerBtn);
-        row1.add(rentalBtn);
-        row2.add(reportBtn);
-        row2.add(logoutBtn);
+        panel.add(vehicleBtn);
+        panel.add(rentalBtn);
+        panel.add(reportBtn);
+        panel.add(customerBtn);
+        panel.add(employeeBtn);
+        panel.add(logoutBtn);
 
-        panel.add(row1);
-        panel.add(row2);
+
         return panel;
     }
 
