@@ -3,6 +3,11 @@ package com.vehicle.rental.g11.gui;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -12,7 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -36,7 +41,7 @@ public class CustomerFrame extends JFrame {
     // Form fields
     private JTextField firstNameField, middleNameField, lastNameField,
                        suffixField, emailField;
-    private JPasswordField passwordField;
+
     private JButton addButton, updateButton, clearButton, deleteButton;
 
     private String selectedCustomerID = null;
@@ -67,57 +72,100 @@ public class CustomerFrame extends JFrame {
         setVisible(true);
     }
 
-    private JPanel buildFormPanel() {
-        JPanel panel = new JPanel(new GridLayout(4, 4, 8, 8));
+private JPanel buildFormPanel() {
+        // Outer container – aligns everything to the left side
+        JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createTitledBorder("Customer Details"));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
 
-        JLabel lbl;
-        lbl = new JLabel("First Name:");
+        // -------------------- Row 0 – First & Middle Name --------------------
+        JPanel row0 = new JPanel(new GridBagLayout());
+        row0.setBackground(UITheme.BG);
+        GridBagConstraints rc = new GridBagConstraints();
+        rc.insets = new Insets(0, 0, 0, 8);
+        rc.anchor = GridBagConstraints.EAST;
+        // First Name label
+        rc.gridx = 0; rc.weightx = 0.0; rc.fill = GridBagConstraints.NONE;
+        JLabel lbl = new JLabel("First Name:");
         lbl.setForeground(UITheme.TEXT_PRIMARY);
-        panel.add(lbl);
-        firstNameField = new JTextField();
+        lbl.setPreferredSize(new Dimension(90, lbl.getPreferredSize().height));
+        row0.add(lbl, rc);
+        // First Name field (expand)
+        rc.gridx = 1; rc.weightx = 1.0; rc.fill = GridBagConstraints.HORIZONTAL;
+        firstNameField = new JTextField(12);
         UITheme.styleField(firstNameField);
-        panel.add(firstNameField);
-
+        row0.add(firstNameField, rc);
+        // Middle Name label
+        rc.gridx = 2; rc.weightx = 0.0; rc.fill = GridBagConstraints.NONE;
         lbl = new JLabel("Middle Name:");
         lbl.setForeground(UITheme.TEXT_PRIMARY);
-        panel.add(lbl);
-        middleNameField = new JTextField();
+        lbl.setPreferredSize(new Dimension(90, lbl.getPreferredSize().height));
+        row0.add(lbl, rc);
+        // Middle Name field (expand)
+        rc.gridx = 3; rc.weightx = 1.0; rc.fill = GridBagConstraints.HORIZONTAL;
+        middleNameField = new JTextField(12);
         UITheme.styleField(middleNameField);
-        panel.add(middleNameField);
+        row0.add(middleNameField, rc);
+        panel.add(row0, gbc);
 
+        // -------------------- Row 1 – Last & Suffix --------------------
+        gbc.gridy++;
+        JPanel row1 = new JPanel(new GridBagLayout());
+        row1.setBackground(UITheme.BG);
+        // Last Name label
+        rc.gridx = 0; rc.weightx = 0.0; rc.fill = GridBagConstraints.NONE;
         lbl = new JLabel("Last Name:");
         lbl.setForeground(UITheme.TEXT_PRIMARY);
-        panel.add(lbl);
-        lastNameField = new JTextField();
+        lbl.setPreferredSize(new Dimension(90, lbl.getPreferredSize().height));
+        row1.add(lbl, rc);
+        // Last Name field (expand)
+        rc.gridx = 1; rc.weightx = 1.0; rc.fill = GridBagConstraints.HORIZONTAL;
+        lastNameField = new JTextField(12);
         UITheme.styleField(lastNameField);
-        panel.add(lastNameField);
-
+        row1.add(lastNameField, rc);
+        // Suffix label
+        rc.gridx = 2; rc.weightx = 0.0; rc.fill = GridBagConstraints.NONE;
         lbl = new JLabel("Suffix:");
         lbl.setForeground(UITheme.TEXT_PRIMARY);
-        panel.add(lbl);
-        suffixField = new JTextField();
+        lbl.setPreferredSize(new Dimension(90, lbl.getPreferredSize().height));
+        row1.add(lbl, rc);
+        // Suffix field (expand)
+        rc.gridx = 3; rc.weightx = 1.0; rc.fill = GridBagConstraints.HORIZONTAL;
+        suffixField = new JTextField(12);
         UITheme.styleField(suffixField);
-        panel.add(suffixField);
+        row1.add(suffixField, rc);
+        panel.add(row1, gbc);
 
+        // -------------------- Row 2 – Email --------------------
+        gbc.gridy++;
+        JPanel row2 = new JPanel(new GridBagLayout());
+        row2.setBackground(UITheme.BG);
+        // Email label
+        rc.gridx = 0; rc.weightx = 0.0; rc.fill = GridBagConstraints.NONE;
         lbl = new JLabel("Email:");
         lbl.setForeground(UITheme.TEXT_PRIMARY);
-        panel.add(lbl);
-        emailField = new JTextField();
+        lbl.setPreferredSize(new Dimension(90, lbl.getPreferredSize().height));
+        row2.add(lbl, rc);
+        // Email field (expand to fill remaining width)
+        rc.gridx = 1; rc.gridwidth = 3; rc.weightx = 1.0; rc.fill = GridBagConstraints.HORIZONTAL;
+        emailField = new JTextField(25);
         UITheme.styleField(emailField);
-        panel.add(emailField);
+        row2.add(emailField, rc);
+        // Reset gridwidth for safety
+        rc.gridwidth = 1;
+        panel.add(row2, gbc);
 
-        lbl = new JLabel("Password:");
-        lbl.setForeground(UITheme.TEXT_PRIMARY);
-        panel.add(lbl);
-        passwordField = new JPasswordField();
-        UITheme.styleField(passwordField);
-        panel.add(passwordField);
-
-        // Fill remaining grid cells
-        panel.add(new JLabel(""));
-        panel.add(new JLabel(""));
+        // Add filler to consume remaining horizontal space if needed
+        gbc.gridy++;
+        gbc.weightx = 1.0;
+        panel.add(new JLabel(""), gbc);
 
         return panel;
     }
@@ -264,10 +312,8 @@ customerTable = new JTable(tableModel) {
             String lName = lastNameField.getText();
             String suffix = suffixField.getText();
             String email = emailField.getText();
-            String password = new String(passwordField.getPassword());
-
-            if (fName.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "First Name, Email, and Password are required.",
+            if (fName.isEmpty() || email.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "First Name and Email are required.",
                                               "Validation Error", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -277,7 +323,7 @@ customerTable = new JTable(tableModel) {
                 com.vehicle.rental.g11.model.Customer customer = new com.vehicle.rental.g11.model.Customer(
                     null, fName, mName, lName, suffix, email
                 );
-                if (dao.addCustomer(customer, password)) {
+                if (dao.addCustomer(customer, null)) {
                     JOptionPane.showMessageDialog(this, "Customer added successfully!");
                     clearForm();
                     loadCustomers();
@@ -398,7 +444,7 @@ customerTable = new JTable(tableModel) {
         lastNameField.setText((String) tableModel.getValueAt(row, 3));
         suffixField.setText((String) tableModel.getValueAt(row, 4));
         emailField.setText((String) tableModel.getValueAt(row, 5));
-        passwordField.setText(""); // never pre-fill password
+
     }
 
     private void clearForm() {
@@ -408,7 +454,6 @@ customerTable = new JTable(tableModel) {
         lastNameField.setText("");
         suffixField.setText("");
         emailField.setText("");
-        passwordField.setText("");
         customerTable.clearSelection();
     }
 }

@@ -10,7 +10,7 @@ import java.util.UUID;
 import com.vehicle.rental.g11.db.DatabaseConnection;
 import com.vehicle.rental.g11.exception.RentalSystemException;
 import com.vehicle.rental.g11.model.Customer;
-import com.vehicle.rental.g11.service.PasswordUtil;
+
 
 public class CustomerDAO {
 
@@ -20,81 +20,91 @@ public class CustomerDAO {
 
     // ----------- ADD -----------
     public boolean addCustomer(Customer customer, String plainPassword) throws RentalSystemException {
-        String sql = "INSERT INTO Customers (customerID, first_name, middle_name, last_name, suffix, email, password) "
-                     + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // Insert into Person table (holds personal data)
+        String personSql = "INSERT INTO Person (personID, first_name, middle_initial, last_name, suffix, email) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)";
+        // Insert into Customer table (FK to Person)
+        String customerSql = "INSERT INTO Customer (personID) VALUES (?)";
 
         // Generate UUID if not already set
         if (customer.getCustomerID() == null) {
             customer.setCustomerID(UUID.randomUUID().toString());
         }
 
-        String hashedPassword = PasswordUtil.hashPassword(plainPassword);
+        try (Connection conn = getConn()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement psPerson = conn.prepareStatement(personSql);
+                 PreparedStatement psCustomer = conn.prepareStatement(customerSql)) {
 
-        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            ps.setString(1, customer.getCustomerID());
-            ps.setString(2, customer.getFirstName());
-            ps.setString(3, customer.getMiddleName());
-            ps.setString(4, customer.getLastName());
-            ps.setString(5, customer.getSuffix());
-            ps.setString(6, customer.getEmail());
-            ps.setString(7, hashedPassword);
+                // Person fields
+                psPerson.setString(1, customer.getCustomerID());
+                psPerson.setString(2, customer.getFirstName());
+                psPerson.setString(3, customer.getMiddleName());
+                psPerson.setString(4, customer.getLastName());
+                psPerson.setString(5, customer.getSuffix());
+                psPerson.setString(6, customer.getEmail());
+                psPerson.executeUpdate();
 
-            int rows = ps.executeUpdate();
-            return rows > 0;
+                // Customer FK only
+                psCustomer.setString(1, customer.getCustomerID());
+                psCustomer.executeUpdate();
 
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw new RentalSystemException("Failed to add customer: " + e.getMessage(), e);
+            } finally {
+                conn.setAutoCommit(true);
+            }
         } catch (SQLException e) {
-            throw new RentalSystemException("Failed to add customer: " + e.getMessage(), e);
+            throw new RentalSystemException("Database error while adding customer: " + e.getMessage(), e);
         }
     }
 
     public Customer getCustomerByEmail(String email) throws RentalSystemException {
-        String sql = "SELECT * FROM Customers WHERE email = ?";
-        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            ps.setString(1, email);
-            try (var rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new Customer(
-                        rs.getString("customerID"),
-                        rs.getString("first_name"),
-                        rs.getString("middle_name"),
-                        rs.getString("last_name"),
-                        rs.getString("suffix"),
-                        rs.getString("email")
-                    );
-                }
-            }
-        } catch (SQLException e) {
-            throw new RentalSystemException("Error fetching customer by email: " + e.getMessage(), e);
-        }
-        return null;
+String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email "
+                 + "FROM Person p JOIN Customer c ON p.personID = c.personID WHERE p.email = ?";
+         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+             ps.setString(1, email);
+             try (var rs = ps.executeQuery()) {
+                 if (rs.next()) {
+                     return new Customer(
+                        rs.getString("personID"),
+
+                         rs.getString("first_name"),
+                        rs.getString("middle_initial"),
+
+                         rs.getString("last_name"),
+                         rs.getString("suffix"),
+                         rs.getString("email")
+                     );
+                 }
+             }
+         } catch (SQLException e) {
+             throw new RentalSystemException("Error fetching customer by email: " + e.getMessage(), e);
+         }
+         return null;
     }
 
     public String getPasswordByEmail(String email) throws RentalSystemException {
-        String sql = "SELECT password FROM Customers WHERE email = ?";
-        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            ps.setString(1, email);
-            try (var rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString("password");
-                }
-            }
-        } catch (SQLException e) {
-            throw new RentalSystemException("Error fetching password by email: " + e.getMessage(), e);
-        }
+        // Passwords are no longer stored for customers in the new schema.
+        // This method is retained for compatibility but always returns null.
         return null;
     }
 
     public List<Customer> getAllCustomers() throws RentalSystemException {
-        String sql = "SELECT * FROM Customers";
+        String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email "
+                + "FROM Person p JOIN Customer c ON p.personID = c.personID";
         return executeSelect(sql);
     }
 
     public List<Customer> searchCustomers(String query) throws RentalSystemException {
         String[] keywords = query.trim().split("\\s+");
-        StringBuilder sql = new StringBuilder("SELECT * FROM Customers WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email FROM Person p JOIN Customer c ON p.personID = c.personID WHERE 1=1");
         
         for (String keyword : keywords) {
-            sql.append(" AND (first_name LIKE ? OR middle_name LIKE ? OR last_name LIKE ? OR email LIKE ?)");
+            sql.append(" AND (first_name LIKE ? OR middle_initial LIKE ? OR last_name LIKE ? OR email LIKE ?)");
         }
 
         List<Customer> customers = new ArrayList<>();
@@ -111,9 +121,9 @@ public class CustomerDAO {
             try (var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     customers.add(new Customer(
-                        rs.getString("customerID"),
+                        rs.getString("personID"),
                         rs.getString("first_name"),
-                        rs.getString("middle_name"),
+                        rs.getString("middle_initial"),
                         rs.getString("last_name"),
                         rs.getString("suffix"),
                         rs.getString("email")
@@ -132,9 +142,9 @@ public class CustomerDAO {
              var rs = ps.executeQuery()) {
             while (rs.next()) {
                 customers.add(new Customer(
-                    rs.getString("customerID"),
+                    rs.getString("personID"),
                     rs.getString("first_name"),
-                    rs.getString("middle_name"),
+                    rs.getString("middle_initial"),
                     rs.getString("last_name"),
                     rs.getString("suffix"),
                     rs.getString("email")
@@ -149,8 +159,8 @@ public class CustomerDAO {
 
     // ----------- UPDATE (no password change) -----------
     public boolean updateCustomer(Customer customer) throws RentalSystemException {
-        String sql = "UPDATE Customers SET first_name = ?, middle_name = ?, last_name = ?, suffix = ?, email = ?  "
-                    + "WHERE customerID = ?";
+String sql = "UPDATE Person SET first_name = ?, middle_initial = ?, last_name = ?, suffix = ?, email = ?  "
+                     + "WHERE personID = ?";
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
             ps.setString(1, customer.getFirstName());
@@ -170,19 +180,9 @@ public class CustomerDAO {
 
     // ----------- UPDATE PASSWORD (Admin Recovery) -----------
     public boolean updatePassword(String customerID, String newPlainPassword) throws RentalSystemException {
-        String sql = "UPDATE Customers SET password = ? WHERE customerID = ?";
-        String hashedPassword = PasswordUtil.hashPassword(newPlainPassword);
-
-        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-            ps.setString(1, hashedPassword);
-            ps.setString(2, customerID);
-
-            int rows = ps.executeUpdate();
-            return rows > 0;
-
-        } catch (SQLException e) {
-            throw new RentalSystemException("Failed to update customer password: " + e.getMessage(), e);
-        }
+        // Passwords are not stored for customers in the new schema.
+        // This operation is unsupported; returning false.
+        return false;
     }
 
     /**
@@ -243,18 +243,38 @@ public class CustomerDAO {
      * - Success: "Customer abc-123 permanently deleted."
      * - Not found: "Customer abc-123 not found."
      */
+        /**
+     * Permanently delete a customer from the database.
+     * Removes the customer record from the Customer table and also deletes the
+     * associated Person record (the super‑type). Both deletions are performed
+     * within a single transaction so that the database remains consistent.
+     * Returns true only if both rows were deleted.
+     */
     public boolean deleteCustomer(String customerID) throws RentalSystemException {
-        String deleteSql = "DELETE FROM Customers WHERE customerID = ?";
+        String deleteCustomerSql = "DELETE FROM Customer WHERE personID = ?";
+        String deletePersonSql   = "DELETE FROM Person   WHERE personID = ?";
 
-        try (Connection conn = getConn();
-             PreparedStatement deletePs = conn.prepareStatement(deleteSql)) {
+        try (Connection conn = getConn()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement psCust   = conn.prepareStatement(deleteCustomerSql);
+                 PreparedStatement psPerson = conn.prepareStatement(deletePersonSql)) {
 
-            deletePs.setString(1, customerID);
-            int rows = deletePs.executeUpdate();
-            return rows > 0;
+                psCust.setString(1, customerID);
+                int custRows = psCust.executeUpdate();
 
+                psPerson.setString(1, customerID);
+                int personRows = psPerson.executeUpdate();
+
+                conn.commit();
+                return custRows > 0 && personRows > 0;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw new RentalSystemException("Failed to delete customer: " + e.getMessage(), e);
+            } finally {
+                conn.setAutoCommit(true);
+            }
         } catch (SQLException e) {
-            throw new RentalSystemException("Failed to delete customer: " + e.getMessage(), e);
+            throw new RentalSystemException("Database error while deleting customer: " + e.getMessage(), e);
         }
     }
 }

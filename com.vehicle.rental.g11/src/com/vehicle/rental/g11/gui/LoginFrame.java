@@ -28,9 +28,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
 
-import com.vehicle.rental.g11.dao.CustomerDAO;
+import com.vehicle.rental.g11.dao.EmployeeDAO;
 import com.vehicle.rental.g11.exception.RentalSystemException;
-import com.vehicle.rental.g11.model.Customer;
+import com.vehicle.rental.g11.model.Employee;
 
 public class LoginFrame extends JFrame {
 
@@ -366,14 +366,14 @@ public class LoginFrame extends JFrame {
         }
 
         try {
-            CustomerDAO customerDAO = new CustomerDAO();
-            Customer customer       = customerDAO.getCustomerByEmail(email);
-            String storedHash       = customerDAO.getPasswordByEmail(email);
+            EmployeeDAO employeeDAO = new EmployeeDAO();
+            Employee employee       = employeeDAO.getEmployeeByEmail(email);
+            String storedHash       = employeeDAO.getPasswordHashByEmail(email);
 
-            if (customer != null && storedHash != null &&
+            if (employee != null && storedHash != null &&
                 com.vehicle.rental.g11.service.PasswordUtil.verifyPassword(storedHash, password)) {
                 JOptionPane.showMessageDialog(this,
-                    "Login successful! Welcome, " + customer.getFirstName(),
+                    "Login successful! Welcome, " + employee.getFirstName(),
                     "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
                 new MainFrame();
@@ -405,9 +405,9 @@ public class LoginFrame extends JFrame {
         }
 
         try {
-            Customer customer       = new Customer(null, fName, mName, lName, suffix, email);
-            CustomerDAO customerDAO = new CustomerDAO();
-            if (customerDAO.addCustomer(customer, password)) {
+            Employee employee       = new Employee(null, fName, mName, lName, suffix, email, null);
+            EmployeeDAO employeeDAO = new EmployeeDAO();
+            if (employeeDAO.addEmployee(employee, password)) {
                 JOptionPane.showMessageDialog(this,
                     "Registration successful! You can now log in.",
                     "Success", JOptionPane.INFORMATION_MESSAGE);
