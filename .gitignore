@@ -17,6 +17,9 @@ bin/
 # OS files
 .DS_Store
 
+# macOS Finder index files
+._*
+
 # Environment variables
 .env
 .env.local

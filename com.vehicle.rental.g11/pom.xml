@@ -31,13 +31,7 @@
             <version>2.11</version>
         </dependency>
 
-        <!-- JUnit 5 -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
-            <scope>test</scope>
-        </dependency>
+
 
         <dependency>
             <groupId>io.github.cdimascio</groupId>
@@ -49,7 +43,7 @@
 
     <build>
         <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>src/test</testSourceDirectory>
+
 
         <plugins>
             <!-- Run tests -->
