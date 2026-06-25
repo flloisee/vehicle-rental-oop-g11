@@ -20,6 +20,9 @@ bin/
 # macOS Finder index files
 ._*
 
+# Agent instructions
+AGENTS.md
+
 # Environment variables
 .env
 .env.local

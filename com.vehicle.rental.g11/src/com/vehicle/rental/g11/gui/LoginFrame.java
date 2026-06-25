@@ -25,6 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 import java.util.regex.Pattern;
 import javax.swing.SwingConstants;
 import javax.swing.border.MatteBorder;
@@ -54,6 +55,14 @@ public class LoginFrame extends JFrame {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w.%+-]+@[\\w.-]+\\.[A-Za-z]{2,6}$");
     private CardLayout cardLayout;
     private JPanel cardPanel;
+
+    // Cooldown fields
+    private int failedLoginAttempts = 0;
+    private static final int MAX_ATTEMPTS = 3;
+    private static final int COOLDOWN_SECONDS = 30;
+    private int cooldownRemaining = 0;
+    private Timer cooldownTimer;
+    private JLabel cooldownLabel;
 
     public LoginFrame() {
         setTitle("Vehicle Rental System — Access");
@@ -246,6 +255,14 @@ public class LoginFrame extends JFrame {
         loginButton = makeAccentButton("Login");
         panel.add(loginButton, gbc);
 
+        // Cooldown label
+        gbc.gridy = 5;
+        gbc.insets = new Insets(8, 0, 0, 0);
+        cooldownLabel = new JLabel("", SwingConstants.CENTER);
+        cooldownLabel.setForeground(UITheme.WARNING);
+        cooldownLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        panel.add(cooldownLabel, gbc);
+
         loginButton.addActionListener(e -> handleLogin());
         passwordField.addActionListener(e -> handleLogin());
 
@@ -358,9 +375,45 @@ public class LoginFrame extends JFrame {
         return btn;
     }
 
+    // ── COOLDOWN ───────────────────────────────────────────────────────────────
+
+    private void startCooldown() {
+        cooldownRemaining = COOLDOWN_SECONDS;
+        loginButton.setEnabled(false);
+        cooldownLabel.setText("Too many attempts. Try again in " + cooldownRemaining + "s.");
+
+        cooldownTimer = new Timer(1000, e -> {
+            cooldownRemaining--;
+            if (cooldownRemaining > 0) {
+                cooldownLabel.setText("Too many attempts. Try again in " + cooldownRemaining + "s.");
+            } else {
+                cooldownTimer.stop();
+                resetCooldown();
+            }
+        });
+        cooldownTimer.start();
+    }
+
+    private void resetCooldown() {
+        if (cooldownTimer != null && cooldownTimer.isRunning()) {
+            cooldownTimer.stop();
+        }
+        failedLoginAttempts = 0;
+        cooldownRemaining = 0;
+        cooldownLabel.setText("");
+        loginButton.setEnabled(true);
+    }
+
     // ── HANDLERS (unchanged logic) ────────────────────────────────────────────
 
     private void handleLogin() {
+        if (cooldownRemaining > 0) {
+            JOptionPane.showMessageDialog(this,
+                "Too many failed attempts. Please wait " + cooldownRemaining + " seconds.",
+                "Account Locked", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         String email    = emailField.getText().trim();
         String password = new String(passwordField.getPassword());
 
@@ -384,12 +437,17 @@ public class LoginFrame extends JFrame {
 
             if (employee != null && storedHash != null &&
                 com.vehicle.rental.g11.service.PasswordUtil.verifyPassword(storedHash, password)) {
+                resetCooldown();
                 JOptionPane.showMessageDialog(this,
                     "Login successful! Welcome, " + employee.getFirstName(),
                     "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
                 new MainFrame();
             } else {
+                failedLoginAttempts++;
+                if (failedLoginAttempts >= MAX_ATTEMPTS) {
+                    startCooldown();
+                }
                 JOptionPane.showMessageDialog(this,
                     "Invalid email or password.",
                     "Login Failed", JOptionPane.ERROR_MESSAGE);
