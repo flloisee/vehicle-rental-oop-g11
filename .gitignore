@@ -28,3 +28,4 @@ AGENTS.md
 .env.local
 .env.*
 !.env.example
+AGENTS.md
