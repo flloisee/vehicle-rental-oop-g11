@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.function.Consumer;
 
+import java.awt.Font;
+
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -27,11 +29,12 @@ public class DatePickerDialog extends JDialog {
         this.onDateSelected = onDateSelected;
 
         setLayout(new BorderLayout());
-        setSize(300, 350);
+        setSize(450, 400);
         setLocationRelativeTo(parent);
 
         JPanel header = new JPanel(new BorderLayout());
         monthLabel = new JLabel("", JLabel.CENTER);
+        monthLabel.setFont(new Font("Arial", Font.BOLD, 14));
         JButton prevButton = UITheme.roundedButton("<", UITheme.ACCENT, UITheme.ACCENT_HOVER);
         JButton nextButton = UITheme.roundedButton(">", UITheme.ACCENT, UITheme.ACCENT_HOVER);
 
@@ -70,6 +73,7 @@ public class DatePickerDialog extends JDialog {
         for (String day : daysOfWeek) {
             JLabel label = new JLabel(day, JLabel.CENTER);
             label.setForeground(Color.GRAY);
+            label.setFont(new Font("Arial", Font.BOLD, 12));
             daysPanel.add(label);
         }
 
@@ -84,6 +88,7 @@ public class DatePickerDialog extends JDialog {
         for (int day = 1; day <= lengthOfMonth; day++) {
             LocalDate date = currentMonth.atDay(day);
             JButton dayButton = new JButton(String.valueOf(day));
+            dayButton.setFont(new Font("Arial", Font.PLAIN, 12));
             if (date.equals(selectedDate)) {
                 dayButton.setOpaque(true);
                 dayButton.setBackground(UITheme.ACCENT);
