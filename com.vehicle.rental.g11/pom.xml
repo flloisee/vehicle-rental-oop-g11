@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.vehicle.rental.g11</groupId>
-    <artifactId>vehicle-rental-system</artifactId>
+    <artifactId>carls</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 

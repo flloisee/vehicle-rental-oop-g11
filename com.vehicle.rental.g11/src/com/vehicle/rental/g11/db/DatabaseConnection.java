@@ -19,7 +19,7 @@ public class DatabaseConnection {
 
     private static final String URL = dotenv.get("DB_URL",
 
-            "jdbc:mysql://localhost:3306/vehicle_rental_g11_oop");
+            "jdbc:mysql://localhost:3306/carls");
 
     private static final String USER = dotenv.get("DB_USER", "root");
 

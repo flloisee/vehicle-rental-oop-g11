@@ -18,7 +18,7 @@ public class MainFrame extends JFrame {
     // Colors moved to UITheme
 
     public MainFrame() {
-        setTitle("Vehicle Rental System - Dashboard");
+        setTitle("CARLS — Dashboard");
         setSize(820, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -37,11 +37,11 @@ public class MainFrame extends JFrame {
         panel.setBackground(UITheme.PURPLE);
         panel.setBorder(BorderFactory.createEmptyBorder(18, 30, 18, 30));
 
-        JLabel title = new JLabel("Vehicle Rental System");
+        JLabel title = new JLabel("CARLS");
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Arial", Font.BOLD, 22));
 
-        JLabel sub = new JLabel("G11  —  Dashboard");
+        JLabel sub = new JLabel("Centralized Automobile Rental & Leasing System  ·  G11");
         sub.setForeground(UITheme.HEADER_SUBTEXT);
         sub.setFont(new Font("Arial", Font.PLAIN, 12));
 
@@ -128,7 +128,7 @@ public class MainFrame extends JFrame {
         JPanel panel = new JPanel();
         panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        JLabel label = new JLabel("Vehicle Rental System © G11");
+        JLabel label = new JLabel("CARLS © G11");
         label.setForeground(UITheme.TEXT_MUTED);
         label.setFont(new Font("Arial", Font.PLAIN, 10));
         panel.add(label);

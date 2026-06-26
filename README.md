@@ -1,4 +1,4 @@
-# Vehicle Rental System
+# CARLS — Centralized Automobile Rental & Leasing System
 > Java management system using OOP, MySQL, Swing, and Maven.
 
 ---
@@ -19,13 +19,13 @@ Requires **Java 21** and **MySQL 8.0+**.
 
 ```bash
 # macOS cleanup — removes ._* files that cause javac errors
-dot_clean com.vehicle.rental.g11/
+dot_clean .
 
 mvn clean
 mvn compile
-mvn package                 # produces target/vehicle-rental-system-1.0.0.jar
+mvn package                 # produces target/carls-1.0.0.jar
 
-java -jar target/vehicle-rental-system-1.0.0.jar
+java -jar target/carls-1.0.0.jar
 ```
 
 ## Database Setup
@@ -33,7 +33,7 @@ java -jar target/vehicle-rental-system-1.0.0.jar
 1. **Create the database** and load the schema:
 
 ```bash
-mysql -u YOUR_USER -p < database/schema/vehicle_rental_g11_oop.sql
+mysql -u YOUR_USER -p < database/schema/carls.sql
 ```
 
 2. **Configure connection** — copy the example env file and update credentials:
@@ -45,12 +45,12 @@ cp com.vehicle.rental.g11/.env.example com.vehicle.rental.g11/.env
 Edit `com.vehicle.rental.g11/.env` to match your local MySQL setup:
 
 ```
-DB_URL=jdbc:mysql://localhost:3306/vehicle_rental_g11_oop
+DB_URL=jdbc:mysql://localhost:3306/carls
 DB_USER=root
 DB_PASSWORD=your_password
 ```
 
-A migration script is available at `database/schema/migration.sql` for upgrading from the legacy denormalized schema.
+A migration script is available at `database/schema/migration.sql` for upgrading from the legacy denormalized schema (pre-CARLS).
 
 ### Schema Overview
 

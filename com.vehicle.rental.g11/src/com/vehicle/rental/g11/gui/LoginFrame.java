@@ -65,7 +65,7 @@ public class LoginFrame extends JFrame {
     private JLabel cooldownLabel;
 
     public LoginFrame() {
-        setTitle("Vehicle Rental System — Access");
+        setTitle("CARLS — Access");
         setSize(440, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -91,7 +91,7 @@ public class LoginFrame extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
 
         // Icon circle
-        JLabel icon = new JLabel("VRS", SwingConstants.CENTER) {
+        JLabel icon = new JLabel("CARLS", SwingConstants.CENTER) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -107,10 +107,15 @@ public class LoginFrame extends JFrame {
         icon.setMaximumSize(new Dimension(54, 54));
         icon.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel title = new JLabel("Vehicle Rental System", SwingConstants.CENTER);
+        JLabel title = new JLabel("CARLS", SwingConstants.CENTER);
         title.setForeground(UITheme.TEXT_PRIMARY);
         title.setFont(new Font("Arial", Font.BOLD, 20));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel fullName = new JLabel("Centralized Automobile Rental & Leasing System", SwingConstants.CENTER);
+        fullName.setForeground(UITheme.TEXT_MUTED);
+        fullName.setFont(new Font("Arial", Font.PLAIN, 10));
+        fullName.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel sub = new JLabel("G11  —  Please log in to continue", SwingConstants.CENTER);
         sub.setForeground(UITheme.TEXT_MUTED);
@@ -120,6 +125,8 @@ public class LoginFrame extends JFrame {
         panel.add(icon);
         panel.add(Box.createVerticalStrut(12));
         panel.add(title);
+        panel.add(Box.createVerticalStrut(2));
+        panel.add(fullName);
         panel.add(Box.createVerticalStrut(4));
         panel.add(sub);
 
@@ -335,7 +342,7 @@ public class LoginFrame extends JFrame {
         JPanel panel = new JPanel();
         panel.setBackground(UITheme.BG);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 12, 0));
-        JLabel label = new JLabel("Vehicle Rental System © G11");
+        JLabel label = new JLabel("CARLS © G11");
         label.setForeground(UITheme.TEXT_MUTED);
         label.setFont(new Font("Arial", Font.PLAIN, 10));
         panel.add(label);

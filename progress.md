@@ -1,5 +1,5 @@
 # PROGRESS.md
-## Vehicle Rental System — G11
+## CARLS (Centralized Automobile Rental & Leasing System) — G11
 **Branch:** `add-record`
 **Last Updated:** 2026-06-14
 **Contributor:** Greta
@@ -33,7 +33,7 @@
 ### 🗃️ db/
 | File | Status | Notes |
 |---|---|---|
-| `DatabaseConnection.java` | ✅ Created | Singleton pattern, DB name corrected to `vehicle_rental_g11_oop`, loads credentials from `.env` |
+| `DatabaseConnection.java` | ✅ Created | Singleton pattern, DB name corrected to `carls`, loads credentials from `.env` |
 
 ---
 
@@ -74,7 +74,7 @@
 
 ## 🔧 Schema Differences Found & Handled
 
-Actual SQL dump (`vehicle_rental_g11_oop.sql`) had these differences from the original plan — all corrected in code:
+Actual SQL dump (`carls.sql`) had these differences from the original plan — all corrected in code:
 
 | Table | Column | Change |
 |---|---|---|

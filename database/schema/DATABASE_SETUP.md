@@ -1,6 +1,6 @@
 # Database Setup Guide
 
-This guide provides instructions on how to implement the `vehicle_rental_g11_oop.sql` schema in your MySQL server.
+This guide provides instructions on how to implement the `carls.sql` schema in your MySQL server.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ This guide provides instructions on how to implement the `vehicle_rental_g11_oop
    ```
 3. Execute the SQL script by providing the path to the file:
    ```sql
-   SOURCE `/path/to/vehicle-rental-oop-g11/database/schema/vehicle_rental_g11_oop.sql`;
+   SOURCE `/path/to/vehicle-rental-oop-g11/database/schema/carls.sql`;
    ```
    *Replace `/path/to/` with the actual absolute path to the project folder.*
 
@@ -26,7 +26,7 @@ This guide provides instructions on how to implement the `vehicle_rental_g11_oop
 
 1. Open **MySQL Workbench** and connect to your server.
 2. Go to `File` $\rightarrow$ `Open SQL Script...`.
-3. Select the `vehicle_rental_g11_oop.sql` file.
+3. Select the `carls.sql` file.
 4. Click the **Execute (Lightning Bolt)** icon to run the script.
 
 ## Verification
@@ -34,7 +34,7 @@ This guide provides instructions on how to implement the `vehicle_rental_g11_oop
 To ensure the database was created successfully, run the following commands in your MySQL client:
 
 ```sql
-USE `vehicle_rental_g11_oop`;
+USE `carls`;
 SHOW TABLES;
 ```
 

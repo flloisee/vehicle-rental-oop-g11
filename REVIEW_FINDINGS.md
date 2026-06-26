@@ -1,4 +1,4 @@
-# Review Findings – Vehicle Rental System (G11)
+# Review Findings – CARLS (G11)
 
 *Prepared by Code‑Reviewer on **2026‑06‑19**.*
 
@@ -84,7 +84,7 @@
 - **Current state:** No test classes found in the repository.
 - **Recommendations:**
   1. Add **unit tests** for `RentalEngine` (availability, cost calculations, start/return flows) using JUnit 5 + Mockito.
-  2. Add **DAO integration tests** using an in‑memory H2 database that loads the MySQL schema (`vehicle_rental_g11_oop.sql`).
+  2. Add **DAO integration tests** using an in‑memory H2 database that loads the MySQL schema (`carls.sql`).
   3. Add **PasswordUtil** tests to verify hash/verify round‑trip and salt uniqueness.
   4. Configure **static analysis** (SpotBugs, PMD, Checkstyle) in the Maven lifecycle (`mvn verify`).
   5. Aim for **> 80 % line coverage** and ensure no critical findings from the static analysis tools.

@@ -1,8 +1,8 @@
-# Vehicle Rental System (G11) - Comprehensive Performance Analysis
+# CARLS (G11) - Comprehensive Performance Analysis
 ## A Detailed Study for Performance Engineers
 
 **Date:** June 2026  
-**Project:** vehicle-rental-oop-g11  
+**Project:** CARLS (Centralized Automobile Rental & Leasing System)  
 **Technology Stack:** Java 21, Swing GUI, MySQL 8.0+, Argon2id  
 **Codebase Size:** 26 Java files, ~11MB, ~3,500+ lines of code
 
@@ -25,7 +25,7 @@ com.vehicle.rental.g11/
 │       └── util/                        # (unused currently)
 ├── database/
 │   └── schema/
-│       ├── vehicle_rental_g11_oop.sql   # Database schema
+│       ├── carls.sql                    # Database schema
 │       └── DATABASE_SETUP.md            # Setup instructions
 ├── pom.xml                              # Maven configuration
 └── .env                                 # Database credentials
@@ -109,7 +109,7 @@ public class DatabaseConnection {
     private static DatabaseConnection instance;
     private Connection connection;
     
-    private static final String URL = dotenv.get("DB_URL", "jdbc:mysql://localhost:3306/vehicle_rental_g11_oop");
+    private static final String URL = dotenv.get("DB_URL", "jdbc:mysql://localhost:3306/carls");
     private static final String USER = dotenv.get("DB_USER", "root");
     private static final String PASSWORD = dotenv.get("DB_PASSWORD", "");
 }
@@ -859,7 +859,7 @@ private static final HikariDataSource dataSource;
 
 static {
     HikariConfig config = new HikariConfig();
-    config.setJdbcUrl("jdbc:mysql://localhost:3306/vehicle_rental_g11_oop");
+    config.setJdbcUrl("jdbc:mysql://localhost:3306/carls");
     config.setUsername("root");
     config.setPassword("");
     config.setMaximumPoolSize(10);
@@ -1100,7 +1100,7 @@ public void updateVehicle(Vehicle vehicle) throws RentalSystemException {
 
 ## 10. CONCLUSION
 
-The Vehicle Rental System is well-architected with clean OOP design and good security practices. However, **performance is significantly limited by database query optimization and GUI threading issues**. 
+CARLS is well-architected with clean OOP design and good security practices. However, **performance is significantly limited by database query optimization and GUI threading issues**. 
 
 **Estimated Improvements:**
 - **Current Performance:** 100 rentals: 2-5s load time

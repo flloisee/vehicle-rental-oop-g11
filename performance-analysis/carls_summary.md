@@ -1,7 +1,7 @@
-# Vehicle Rental System (G11) - Executive Summary
+# CARLS (G11) - Executive Summary
 
 ## Project Overview
-- **Name:** Vehicle Rental System (G11)
+- **Name:** CARLS (Centralized Automobile Rental & Leasing System) (G11)
 - **Type:** Desktop application (Swing GUI)
 - **Scope:** 26 Java files, ~3,500 LOC, 75% GUI code
 - **Stack:** Java 21, MySQL 8.0, Swing, JDBC
@@ -198,7 +198,7 @@ Database Layer (MySQL with 3 tables)
 
 ## Conclusion
 
-The Vehicle Rental System demonstrates **excellent software engineering principles** (clean architecture, OOP design, security) but suffers from **significant performance bottlenecks** in database queries and GUI threading.
+CARLS demonstrates **excellent software engineering principles** (clean architecture, OOP design, security) but suffers from **significant performance bottlenecks** in database queries and GUI threading.
 
 **Key Findings:**
 1. Most latency is in database layer (missing indexes, poor queries)

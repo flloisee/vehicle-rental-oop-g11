@@ -1,12 +1,12 @@
-# Vehicle Rental System - Performance Analysis Index
+# CARLS - Performance Analysis Index
 
 ## Document Overview
 
-This comprehensive performance analysis covers the vehicle-rental-oop-g11 codebase with detailed findings for optimization professionals. Three complementary documents provide different levels of detail:
+This comprehensive performance analysis covers the CARLS codebase with detailed findings for optimization professionals. Three complementary documents provide different levels of detail:
 
 ### Analysis Documents Created
 
-#### 1. **vehicle_rental_summary.md** (7.1 KB)
+#### 1. **carls_summary.md** (7.1 KB)
 **For:** Executive stakeholders, project managers, quick reference  
 **Contains:**
 - Project overview and statistics
@@ -21,7 +21,7 @@ This comprehensive performance analysis covers the vehicle-rental-oop-g11 codeba
 
 ---
 
-#### 2. **vehicle_rental_performance_analysis.md** (38 KB)
+#### 2. **carls_performance_analysis.md** (38 KB)
 **For:** Performance engineers, system architects, technical deep-dives  
 **Contains:**
 - Detailed section on all 26 Java files analyzed
@@ -190,8 +190,8 @@ All analysis files are located in:
 
 | Document | Size | Purpose |
 |----------|------|---------|
-| vehicle_rental_summary.md | 7.1 KB | Executive overview |
-| vehicle_rental_performance_analysis.md | 38 KB | Detailed technical analysis |
+| carls_summary.md | 7.1 KB | Executive overview |
+| carls_performance_analysis.md | 38 KB | Detailed technical analysis |
 | PERFORMANCE_ARCHITECTURE.md | 23 KB | Visual diagrams & flows |
 | PERFORMANCE_ANALYSIS_INDEX.md | This file | Navigation guide |
 
@@ -200,14 +200,14 @@ All analysis files are located in:
 ## How to Use These Documents
 
 ### 1. Getting Started (5 minutes)
-Read **vehicle_rental_summary.md** to understand:
+Read **carls_summary.md** to understand:
 - What the system does
 - Where the performance problems are
 - What optimizations are recommended
 - Expected ROI and timeline
 
 ### 2. Deep Dive (30 minutes)
-Read **vehicle_rental_performance_analysis.md** sections:
+Read **carls_performance_analysis.md** sections:
 - Section 2.1-2.5: Component analysis (identify specific issues)
 - Section 4: Performance hotspots table (prioritize work)
 - Section 6: Detailed recommendations (see code examples)
@@ -231,7 +231,7 @@ Use all documents together:
 ## Quick Reference: Top Issues
 
 ### Issue #1: Missing Email Index
-- **File:** `database/schema/vehicle_rental_g11_oop.sql`
+- **File:** `database/schema/carls.sql`
 - **Impact:** Every login takes 100-500ms
 - **Fix:** 1 line SQL, 2 minute setup
 - **Gain:** 10-25x faster logins
@@ -343,11 +343,11 @@ Day 5-8: Testing & Validation
 
 For detailed analysis of specific components, refer to:
 
-- **Database queries:** vehicle_rental_performance_analysis.md, Section 2.2
-- **GUI performance:** vehicle_rental_performance_analysis.md, Section 2.5
+- **Database queries:** carls_performance_analysis.md, Section 2.2
+- **GUI performance:** carls_performance_analysis.md, Section 2.5
 - **Data flows:** PERFORMANCE_ARCHITECTURE.md, "Data Flow Diagrams"
 - **Index impact:** PERFORMANCE_ARCHITECTURE.md, "Index Impact Analysis"
-- **Recommendations:** vehicle_rental_performance_analysis.md, Section 6
+- **Recommendations:** carls_performance_analysis.md, Section 6
 
 ---
 

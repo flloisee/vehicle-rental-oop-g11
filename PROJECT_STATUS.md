@@ -24,7 +24,7 @@
 |18| **OOP Concepts – Exception Handling** (V‑8) | **Fully implemented** | Custom `RentalSystemException` used throughout. |
 |19| **OOP Concepts – Collections** (V‑9) | **Fully implemented** | `List`, `ArrayList`, `Map` used in DAOs and services. |
 |20| **Minimum Class Requirement (≥ 5 classes)** (VI) | **Fully implemented** | > 20 classes across packages (`model`, `dao`, `service`, `gui`, `exception`). |
-|21| **Database Requirement – ≥ 3 tables** (VII) | **Fully implemented** | Schema (`vehicle_rental_g11_oop.sql`) defines `Customers`, `Vehicles`, `Rentals`. **Note:** `CustomerDAO.archiveCustomer` references a non‑existent `is_active` column – schema/DAO mismatch. |
+|21| **Database Requirement – ≥ 3 tables** (VII) | **Fully implemented** | Schema (`carls.sql`) defines `Customers`, `Vehicles`, `Rentals`. **Note:** `CustomerDAO.archiveCustomer` references a non‑existent `is_active` column – schema/DAO mismatch. |
 |22| **Documentation – Title Page, Introduction, Objectives, etc.** (VIII‑1…‑12) | **Missing** | No PDF documentation, no ERD, flowchart, screenshots, or formal sections. The repository only contains a short `README.md` and a progress tracker. |
 |23| **Video Demonstration** (X‑1) | **Missing** | No video files or links in the repo. |
 |24| **Grading Criteria – System Functionality, OOP, DB Integration, Validation, Docs, Presentation** (X‑III) | **Partially satisfied** | Functional code meets most functional criteria, but documentation and testing are absent; Delete Vehicle & default admin are gaps. |
@@ -55,7 +55,7 @@
 ### Recommended Next Steps (Prioritized)
 
 1. **Seed a default admin account**  
-   *Add an INSERT statement to `vehicle_rental_g11_oop.sql` (e.g., admin email `admin@example.com`, password hashed with `PasswordUtil`).*
+   *Add an INSERT statement to `carls.sql` (e.g., admin email `admin@example.com`, password hashed with `PasswordUtil`).*
 2. **Implement Vehicle delete**  
    *Add `deleteVehicle(int vehicleID)` in `VehicleDAO` and a “Delete Vehicle” button in `VehicleFrame`.*
 3. **Fix `archiveCustomer` mismatch**  

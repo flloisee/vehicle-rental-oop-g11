@@ -100,5 +100,5 @@ C:.
 +---database
     +---schema
             DATABASE_SETUP.md
-            vehicle_rental_g11_oop.sql
+            carls.sql
             

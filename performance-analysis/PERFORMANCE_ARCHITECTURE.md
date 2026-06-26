@@ -1,4 +1,4 @@
-# Vehicle Rental System - Performance Architecture Diagram
+# CARLS - Performance Architecture Diagram
 
 ## System Architecture Overview
 
@@ -65,7 +65,7 @@
 │  │         (52 lines)                                              │   │
 │  ├─────────────────────────────────────────────────────────────────┤   │
 │  │ - Single static Connection instance                             │   │
-│  │ - URL: jdbc:mysql://localhost:3306/vehicle_rental_g11_oop      │   │
+│  │ - URL: jdbc:mysql://localhost:3306/carls      │   │
 │  │ - User: root (from .env)                                        │   │
 │  │ - Recreates connection if closed                                │   │
 │  │                                                                 │   │
@@ -387,6 +387,6 @@ ESTIMATED EFFORT: 5-8 days
 
 ---
 
-**Document:** Vehicle Rental System - Performance Architecture  
+**Document:** CARLS - Performance Architecture  
 **Date:** June 22, 2026  
 **Audience:** Performance Engineers, DevOps, Development Team
