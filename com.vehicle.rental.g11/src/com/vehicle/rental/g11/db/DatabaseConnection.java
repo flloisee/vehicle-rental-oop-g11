@@ -23,7 +23,7 @@ public class DatabaseConnection {
 
     private static final String USER = dotenv.get("DB_USER", "root");
 
-    private static final String PASSWORD = dotenv.get("DB_PASSWORD", "");
+    private static final String PASSWORD = dotenv.get("DB_PASSWORD", "jacopogi123");
     private DatabaseConnection() throws RentalSystemException {
         try {
             connection = DriverManager.getConnection(URL, USER, PASSWORD);

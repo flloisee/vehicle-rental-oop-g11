@@ -35,7 +35,7 @@ import com.vehicle.rental.g11.service.RentalEngine;
 
 public class ReportFrame extends JFrame {
 
-    private JLabel totalRevenueLabel, pendingPaymentsLabel, activeRentalsLabel;
+    private JLabel totalRevenueLabel, activeRentalsLabel;
     private JLabel overdueLabel, todaysRentalsLabel;
     private JLabel insightMostRentedLabel, insightOverdueLabel, insightUnpaidLabel;
     private JLabel insightUtilizationLabel, insightTopCustomerLabel, insightAvgDurationLabel;
@@ -95,13 +95,11 @@ public class ReportFrame extends JFrame {
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
 
         totalRevenueLabel = makeValueLabel("Loading...", UITheme.SUCCESS);
-        pendingPaymentsLabel = makeValueLabel("Loading...", UITheme.WARNING);
         activeRentalsLabel = makeValueLabel("Loading...", UITheme.INFO);
         overdueLabel = makeValueLabel("Loading...", new Color(220, 53, 69)); // Red
         todaysRentalsLabel = makeValueLabel("Loading...", new Color(40, 167, 69)); // Green
 
         panel.add(makeStatCard("💰 Total Revenue", totalRevenueLabel, UITheme.SUCCESS, null));
-        panel.add(makeStatCard("⏳ Pending Payments", pendingPaymentsLabel, UITheme.WARNING, this::showPendingPayments));
         panel.add(makeStatCard("🚗 Active Rentals", activeRentalsLabel, UITheme.INFO, this::showActiveRentals));
         panel.add(makeStatCard("⚠️ Overdue", overdueLabel, new Color(220, 53, 69), this::showOverdueRentals));
         panel.add(makeStatCard("📅 Today's Rentals", todaysRentalsLabel, new Color(40, 167, 69), this::showTodayRentals));
@@ -324,9 +322,6 @@ private JPanel makeInsightCard(String title, JLabel valueLabel) {
             double revenue = rentalEngine.getTotalRevenue();
             totalRevenueLabel.setText(String.format("₱%.2f", revenue));
 
-            int pendingPayments = rentalEngine.getPendingPaymentsCount();
-            pendingPaymentsLabel.setText(String.valueOf(pendingPayments));
-
             int active = rentalEngine.getActiveRentalCount();
             activeRentalsLabel.setText(String.valueOf(active));
 
@@ -351,8 +346,8 @@ private JPanel makeInsightCard(String title, JLabel valueLabel) {
             double avgDuration = rentalEngine.getAverageRentalDuration();
             insightAvgDurationLabel.setText(String.format("%.1f days", avgDuration));
 
-            // Populate table with overdue rentals by default
-            populateRentalTable(overdue, "Overdue Rentals");
+            // Populate table with all rentals by default
+            populateRentalTable(rentalEngine.getAllRentals(), "All Rentals");
 
         } catch (RentalSystemException e) {
             JOptionPane.showMessageDialog(this,
@@ -382,16 +377,6 @@ private JPanel makeInsightCard(String title, JLabel valueLabel) {
                 daysOverdue > 0 ? daysOverdue + " days" : "-",
                 statusEmoji + " " + status
             });
-        }
-    }
-
-    private void showPendingPayments() {
-        try {
-            populateRentalTable(rentalEngine.getPendingPaymentRentals(), "Pending Payment Rentals");
-        } catch (RentalSystemException e) {
-            JOptionPane.showMessageDialog(this,
-                "Failed to load pending payment rentals: " + e.getMessage(),
-                "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -429,8 +414,7 @@ private JPanel makeInsightCard(String title, JLabel valueLabel) {
         return switch(status) {
             case "OVERDUE" -> "🔴";
             case "ACTIVE" -> "🟢";
-            case "RETURNED (UNPAID)" -> "🟠";
-            case "COMPLETED (PAID)" -> "✅";
+            case "COMPLETED" -> "✅";
             default -> "⚫";
         };
     }

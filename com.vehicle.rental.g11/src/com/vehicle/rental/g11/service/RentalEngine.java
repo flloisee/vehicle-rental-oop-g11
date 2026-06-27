@@ -193,9 +193,7 @@ public class RentalEngine {
     }
 
     public List<Rentals> getPendingPaymentRentals() throws RentalSystemException {
-        return rentalDAO.getAllRentals().stream()
-                        .filter(r -> r.isReturned() && !isPaid(r))
-                        .toList();
+        return getOverdueRentals();
     }
 
     public List<Rentals> getTodaysRentals() throws RentalSystemException {
@@ -209,25 +207,24 @@ public class RentalEngine {
         return rentalDAO.getActiveRentals();
     }
 
+    public List<Rentals> getAllRentals() throws RentalSystemException {
+        return rentalDAO.getAllRentals();
+    }
+
     // -------------------------------------------------------
     // DASHBOARD ANALYTICS METHODS
     // -------------------------------------------------------
 
-    // Get count of rentals that were returned but not yet paid
+    // Get count of overdue rentals, which represent pending payment balances
     public int getPendingPaymentsCount() throws RentalSystemException {
-        List<Rentals> all = rentalDAO.getAllRentals();
-        return (int) all.stream()
-                        .filter(r -> r.isReturned() && !isPaid(r))
-                        .count();
+        return getOverdueRentals().size();
     }
 
-    // Get total unpaid balance from returned but unpaid rentals
+    // Get total unpaid balance from overdue rentals
     public double getTotalUnpaidBalance() throws RentalSystemException {
-        List<Rentals> all = rentalDAO.getAllRentals();
-        return all.stream()
-                  .filter(r -> r.isReturned() && !isPaid(r))
-                  .mapToDouble(Rentals::getTotalCost)
-                  .sum();
+        return getOverdueRentals().stream()
+                                  .mapToDouble(Rentals::getTotalCost)
+                                  .sum();
     }
 
     // Get count of rentals happening today
@@ -294,7 +291,7 @@ public class RentalEngine {
                   .orElse(0);
     }
 
-    // Determine rental status
+    // Determine rental status: only ACTIVE, OVERDUE, or COMPLETED
     public String getRentalStatus(Rentals rental) {
         if (!rental.isReturned()) {
             LocalDate today = LocalDate.now();
@@ -304,16 +301,8 @@ public class RentalEngine {
                 return "ACTIVE";
             }
         } else {
-            return isPaid(rental) ? "COMPLETED (PAID)" : "RETURNED (UNPAID)";
+            return "COMPLETED";
         }
-    }
-
-    // Helper: check if a rental is paid (assuming all returned rentals are marked as paid in real system)
-    // In this simplified version, we'll assume returned rentals are paid unless noted otherwise
-    private boolean isPaid(Rentals rental) {
-        // This is a simplification. In a real system, there would be a separate payments table.
-        // Here the rental object is checked to ensure the method parameter is used.
-        return rental != null && rental.isReturned();
     }
 
     // Get all vehicles for utilization calculation

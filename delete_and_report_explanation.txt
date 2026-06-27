@@ -1,0 +1,56 @@
+DELETE and Report explanation for the Vehicle Rental System
+
+1. Delete behavior
+------------------
+- The system offers permanent deletion for vehicles and customers through the GUI.
+- Vehicle deletion is handled in `com.vehicle.rental.g11.gui.VehicleFrame`.
+  - The user must select a vehicle first.
+  - A confirmation dialog asks: "Are you sure you want to PERMANENTLY DELETE this vehicle? This action cannot be undone!"
+  - Before deleting, the system checks whether the selected vehicle has associated rentals using `VehicleDAO.hasAssociatedRentals(int vehicleID)`.
+  - If rental history exists, deletion is blocked and the user sees a warning: the vehicle cannot be deleted because of referential integrity.
+  - If no associated rentals exist, `VehicleDAO.deleteVehicle(int vehicleID)` executes a SQL `DELETE FROM Vehicles WHERE vehicleID = ?` and removes that vehicle row permanently from the database.
+  - After successful deletion, the system clears the form and refreshes the vehicle list.
+
+- Customer deletion is handled in `com.vehicle.rental.g11.gui.CustomerFrame`.
+  - The user must select a customer first.
+  - A confirmation dialog asks: "Are you sure you want to PERMANENTLY DELETE this customer? This action cannot be undone!"
+  - The system then calls `CustomerDAO.deleteCustomer(String customerID)`.
+  - This DAO method removes the customer from both the `Customer` table and the associated `Person` table inside a single transaction.
+  - If both rows are deleted, the operation returns success; otherwise it reports failure.
+  - When successful, the GUI clears the form and reloads the customer list.
+
+- Important safety notes
+  - Both delete operations are permanent and irreversible when confirmed.
+  - Vehicle deletion includes an extra check for rental history to avoid breaking database integrity.
+  - Customer deletion is performed in a transactional manner to keep related records consistent.
+
+2. Report behavior
+------------------
+- Reporting is implemented in `com.vehicle.rental.g11.gui.ReportFrame` and uses `com.vehicle.rental.g11.service.RentalEngine`.
+- The report screen is opened from `MainFrame` when the user clicks the `Reports` button.
+- The report UI displays:
+  - Total revenue from completed rentals
+  - Pending payments count
+  - Active rentals count
+  - Overdue rentals count
+  - Rentals starting today
+  - Additional insights such as most rented vehicle, total unpaid balance, utilization rate, top customer, and average rental duration
+- `ReportFrame.loadReports()` retrieves data from `RentalEngine` and updates the UI labels.
+- Key report methods in `RentalEngine`:
+  - `getTotalRevenue()` sums `totalCost` for returned rentals.
+  - `getPendingPaymentsCount()` counts returned rentals that are not yet marked paid.
+  - `getActiveRentalCount()` counts rentals that are currently ongoing.
+  - `getOverdueRentals()` returns active rentals with due dates before today.
+  - `getTodaysRentalsCount()` counts rentals that started on the current date.
+  - `getMostRentedVehicle()` finds the vehicle with the highest rental frequency.
+  - `getTotalUnpaidBalance()` sums the total cost of returned but unpaid rentals.
+  - `getOverdueTodayCount()` reports how many rentals are currently overdue.
+- The report view includes an interactive table and a "Refresh Reports" button to reload the data.
+- Some summary cards are clickable to switch the table contents to specific lists, such as pending payments, active rentals, overdue rentals, or today9s rentals.
+
+3. How these features connect
+-----------------------------
+- Deletion is a data management action affecting customers and vehicles in the database.
+- Reporting is an analytics/dashboard feature that reads rental and payment data to help users monitor system performance.
+- The delete flow does not directly alter report logic, but removing vehicles or customers can affect future rental data and inventory counts.
+- The report screen is read-only and does not perform deletions itself.
