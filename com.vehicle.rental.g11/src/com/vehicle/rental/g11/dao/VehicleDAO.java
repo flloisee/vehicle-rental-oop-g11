@@ -103,7 +103,42 @@ public class VehicleDAO {
     }
 
     public java.util.List<Vehicle> searchVehicles(String query) throws com.vehicle.rental.g11.exception.RentalSystemException {
-        return searchVehicles(query, "");
+        java.util.List<Vehicle> results = new java.util.ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return results;
+        }
+        String[] keywords = query.trim().split("\\s+");
+        StringBuilder sql = new StringBuilder("SELECT * FROM Vehicles WHERE 1=1");
+        for (String keyword : keywords) {
+            sql.append(" AND (CAST(vehicleID AS CHAR) LIKE ? OR brand LIKE ? OR model LIKE ? OR plate_number LIKE ? OR type LIKE ?)");
+        }
+        try (PreparedStatement ps = getConn().prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (String keyword : keywords) {
+                String pattern = "%" + keyword + "%";
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String type = rs.getString("type");
+                results.add(com.vehicle.rental.g11.model.VehicleFactory.createVehicle(
+                        type,
+                        rs.getInt("vehicleID"),
+                        rs.getString("brand"),
+                        rs.getString("model"),
+                        rs.getString("plate_number"),
+                        rs.getDouble("daily_rate"),
+                        VehicleStatus.fromDbValue(rs.getString("status"))
+                ));
+            }
+        } catch (SQLException e) {
+            throw new com.vehicle.rental.g11.exception.RentalSystemException("Search failed: " + e.getMessage(), e);
+        }
+        return results;
     }
 
     public java.util.List<Vehicle> searchVehicles(String brandModel, String plateNumber) throws com.vehicle.rental.g11.exception.RentalSystemException {
@@ -112,8 +147,9 @@ public class VehicleDAO {
         java.util.List<String> params = new java.util.ArrayList<>();
 
         if (brandModel != null && !brandModel.trim().isEmpty()) {
-            sql.append(" AND (brand LIKE ? OR model LIKE ?)");
+            sql.append(" AND (CAST(vehicleID AS CHAR) LIKE ? OR brand LIKE ? OR model LIKE ?)");
             String wildCard = "%" + brandModel.trim() + "%";
+            params.add(wildCard);
             params.add(wildCard);
             params.add(wildCard);
         }

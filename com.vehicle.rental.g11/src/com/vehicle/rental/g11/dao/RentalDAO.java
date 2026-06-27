@@ -149,14 +149,14 @@ String sql = "SELECT r.*, c.first_name, c.middle_initial, c.last_name, c.suffix,
                 "CONCAT_WS(' ', c.first_name, c.middle_initial, c.last_name) as customerName, " +
                 "v.brand, v.model " +
                 "FROM Rentals r " +
-                "LEFT JOIN Customers c ON r.customerID = c.customerID " +
+                "LEFT JOIN Person c ON r.personID = c.personID " +
                 "LEFT JOIN Vehicles v ON r.vehicleID = v.vehicleID ";
         StringBuilder where = new StringBuilder();
         // For each token we require it to appear in at least one column (AND between tokens)
         for (int i = 0; i < maxTokens; i++) {
             if (i > 0) where.append(" AND ");
             where.append("(");
-            where.append("r.customerID LIKE ? OR ");
+            where.append("r.personID LIKE ? OR ");
             where.append("CAST(r.vehicleID AS CHAR) LIKE ? OR ");
             where.append("CAST(r.rentalID AS CHAR) LIKE ? OR ");
             where.append("c.first_name LIKE ? OR ");

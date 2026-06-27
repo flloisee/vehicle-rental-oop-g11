@@ -145,13 +145,14 @@ public class EmployeeDAO {
                 "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email, e.password " +
                 "FROM Person p JOIN Employee e ON p.personID = e.personID WHERE 1=1");
         for (String keyword : keywords) {
-            sql.append(" AND (first_name LIKE ? OR middle_initial LIKE ? OR last_name LIKE ? OR email LIKE ?)");
+            sql.append(" AND (p.personID LIKE ? OR first_name LIKE ? OR middle_initial LIKE ? OR last_name LIKE ? OR email LIKE ?)");
         }
         List<Employee> results = new ArrayList<>();
         try (PreparedStatement ps = getConn().prepareStatement(sql.toString())) {
             int idx = 1;
             for (String keyword : keywords) {
                 String pattern = "%" + keyword + "%";
+                ps.setString(idx++, pattern);
                 ps.setString(idx++, pattern);
                 ps.setString(idx++, pattern);
                 ps.setString(idx++, pattern);

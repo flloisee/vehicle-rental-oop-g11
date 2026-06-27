@@ -104,7 +104,7 @@ String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.
         StringBuilder sql = new StringBuilder("SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email FROM Person p JOIN Customer c ON p.personID = c.personID WHERE 1=1");
         
         for (String keyword : keywords) {
-            sql.append(" AND (first_name LIKE ? OR middle_initial LIKE ? OR last_name LIKE ? OR email LIKE ?)");
+            sql.append(" AND (p.personID LIKE ? OR first_name LIKE ? OR middle_initial LIKE ? OR last_name LIKE ? OR email LIKE ?)");
         }
 
         List<Customer> customers = new ArrayList<>();
@@ -113,6 +113,7 @@ String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.
             int paramIndex = 1;
             for (String keyword : keywords) {
                 String pattern = "%" + keyword + "%";
+                ps.setString(paramIndex++, pattern);
                 ps.setString(paramIndex++, pattern);
                 ps.setString(paramIndex++, pattern);
                 ps.setString(paramIndex++, pattern);
