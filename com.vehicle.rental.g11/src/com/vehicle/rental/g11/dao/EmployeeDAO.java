@@ -91,6 +91,15 @@ public class EmployeeDAO {
         return emp != null ? emp.getPasswordHash() : null;
     }
 
+    /** Seeds the default admin account if it doesn't already exist. */
+    public void seedDefaultAdmin() throws RentalSystemException {
+        String adminEmail = "admin@carls.com";
+        if (getEmployeeByEmail(adminEmail) == null) {
+            Employee admin = new Employee(null, "Admin", null, "Admin", null, adminEmail, null);
+            addEmployee(admin, "admin123");
+        }
+    }
+
     /** Updates an employee's password (admin recovery). */
     public boolean updatePassword(String personID, String newPlainPassword) throws RentalSystemException {
         String sql = "UPDATE Employee SET password = ? WHERE personID = ?";
