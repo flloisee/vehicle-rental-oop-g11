@@ -141,7 +141,7 @@ A migration script is available at `database/schema/migration.sql` for upgrading
 
 ### Phase 6: Finalization
 - [X] **Robustness:** `try-catch` error handling & input validation
-- [ ] **Documentation:** Final PDF (ERD, UML, Flowcharts, Screenshots)
+- [x] **Documentation:** Final PDF (ERD, UML, Flowcharts, Screenshots)
 
 ---
 
