@@ -63,46 +63,40 @@ public class CustomerDAO {
     }
 
     public Customer getCustomerByEmail(String email) throws RentalSystemException {
-String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email "
-                 + "FROM Person p JOIN Customer c ON p.personID = c.personID WHERE p.email = ?";
-         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
-             ps.setString(1, email);
-             try (var rs = ps.executeQuery()) {
-                 if (rs.next()) {
-                     return new Customer(
-                        rs.getString("personID"),
-
-                         rs.getString("first_name"),
-                        rs.getString("middle_initial"),
-
-                         rs.getString("last_name"),
-                         rs.getString("suffix"),
-                         rs.getString("email")
-                     );
-                 }
-             }
-         } catch (SQLException e) {
-             throw new RentalSystemException("Error fetching customer by email: " + e.getMessage(), e);
-         }
-         return null;
+        String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email, c.is_active "
+                   + "FROM Person p JOIN Customer c ON p.personID = c.personID "
+                   + "WHERE p.email = ? AND c.is_active = 1";
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapCustomer(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RentalSystemException("Error fetching customer by email: " + e.getMessage(), e);
+        }
+        return null;
     }
 
     public String getPasswordByEmail(String email) throws RentalSystemException {
-        // Passwords are no longer stored for customers in the new schema.
-        // This method is retained for compatibility but always returns null.
         return null;
     }
 
     public List<Customer> getAllCustomers() throws RentalSystemException {
-        String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email "
-                + "FROM Person p JOIN Customer c ON p.personID = c.personID";
+        String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email, c.is_active "
+                   + "FROM Person p JOIN Customer c ON p.personID = c.personID "
+                   + "WHERE c.is_active = 1";
         return executeSelect(sql);
     }
 
     public List<Customer> searchCustomers(String query) throws RentalSystemException {
         String[] keywords = query.trim().split("\\s+");
-        StringBuilder sql = new StringBuilder("SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email FROM Person p JOIN Customer c ON p.personID = c.personID WHERE 1=1");
-        
+        StringBuilder sql = new StringBuilder(
+            "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.suffix, p.email, c.is_active "
+          + "FROM Person p JOIN Customer c ON p.personID = c.personID "
+          + "WHERE c.is_active = 1");
+
         for (String keyword : keywords) {
             sql.append(" AND (p.personID LIKE ? OR first_name LIKE ? OR middle_initial LIKE ? OR last_name LIKE ? OR email LIKE ?)");
         }
@@ -121,14 +115,7 @@ String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.
             }
             try (var rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    customers.add(new Customer(
-                        rs.getString("personID"),
-                        rs.getString("first_name"),
-                        rs.getString("middle_initial"),
-                        rs.getString("last_name"),
-                        rs.getString("suffix"),
-                        rs.getString("email")
-                    ));
+                    customers.add(mapCustomer(rs));
                 }
             }
         } catch (SQLException e) {
@@ -142,14 +129,7 @@ String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.
         try (PreparedStatement ps = getConn().prepareStatement(sql);
              var rs = ps.executeQuery()) {
             while (rs.next()) {
-                customers.add(new Customer(
-                    rs.getString("personID"),
-                    rs.getString("first_name"),
-                    rs.getString("middle_initial"),
-                    rs.getString("last_name"),
-                    rs.getString("suffix"),
-                    rs.getString("email")
-                ));
+                customers.add(mapCustomer(rs));
             }
         } catch (SQLException e) {
             throw new RentalSystemException("Error fetching customers: " + e.getMessage(), e);
@@ -157,11 +137,22 @@ String sql = "SELECT p.personID, p.first_name, p.middle_initial, p.last_name, p.
         return customers;
     }
 
+    private Customer mapCustomer(java.sql.ResultSet rs) throws SQLException {
+        return new Customer(
+            rs.getString("personID"),
+            rs.getString("first_name"),
+            rs.getString("middle_initial"),
+            rs.getString("last_name"),
+            rs.getString("suffix"),
+            rs.getString("email"),
+            rs.getBoolean("is_active")
+        );
+    }
 
     // ----------- UPDATE (no password change) -----------
     public boolean updateCustomer(Customer customer) throws RentalSystemException {
-String sql = "UPDATE Person SET first_name = ?, middle_initial = ?, last_name = ?, suffix = ?, email = ?  "
-                     + "WHERE personID = ?";
+        String sql = "UPDATE Person SET first_name = ?, middle_initial = ?, last_name = ?, suffix = ?, email = ? "
+                   + "WHERE personID = ?";
 
         try (PreparedStatement ps = getConn().prepareStatement(sql)) {
             ps.setString(1, customer.getFirstName());
@@ -169,113 +160,42 @@ String sql = "UPDATE Person SET first_name = ?, middle_initial = ?, last_name = 
             ps.setString(3, customer.getLastName());
             ps.setString(4, customer.getSuffix());
             ps.setString(5, customer.getEmail());
-	    ps.setString(6, customer.getCustomerID());
+            ps.setString(6, customer.getCustomerID());
 
             int rows = ps.executeUpdate();
             return rows > 0;
-
         } catch (SQLException e) {
             throw new RentalSystemException("Failed to update customer: " + e.getMessage(), e);
         }
     }
 
-    // ----------- UPDATE PASSWORD (Admin Recovery) -----------
-    public boolean updatePassword(String customerID, String newPlainPassword) throws RentalSystemException {
-        // Passwords are not stored for customers in the new schema.
-        // This operation is unsupported; returning false.
-        return false;
-    }
-
+    // ----------- SOFT DELETE -----------
     /**
-     * Soft-delete (archive) a customer by setting `is_active` = 0.
-     * Validation: checks that the customer exists and is currently active.
-     * Returns true if the update affected at least one row, false if customer
-     * doesn't exist or was already inactive.
-     * Uses PreparedStatement to avoid SQL injection and proper exception handling.
-     *
-     * Sample console flow:
-     * - Success: "Customer 123 archived successfully."
-     * - Not found: "Customer 123 not found; nothing to archive."
-     * - Already inactive: "Customer 123 is already archived."
-     *
-     * Why soft delete: preserves historical data and avoids breaking
-     * foreign-key references; allows easy restore and auditability.
-     */
-    public boolean archiveCustomer(int customerId) throws RentalSystemException {
-        String checkSql = "SELECT is_active FROM customers WHERE customer_id = ?";
-        String updateSql = "UPDATE customers SET is_active = 0 WHERE customer_id = ?";
-
-        try (Connection conn = getConn();
-             PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
-
-            // Validation: ensure customer exists
-            checkPs.setInt(1, customerId);
-            try (var rs = checkPs.executeQuery()) {
-                if (!rs.next()) {
-                    // Customer does not exist
-                    return false;
-                }
-                boolean isActive = rs.getBoolean("is_active");
-                if (!isActive) {
-                    // Already archived/inactive
-                    return false;
-                }
-            }
-
-            // Perform soft delete
-            try (PreparedStatement updatePs = conn.prepareStatement(updateSql)) {
-                updatePs.setInt(1, customerId);
-                int rows = updatePs.executeUpdate();
-                return rows > 0;
-            }
-
-        } catch (SQLException e) {
-            throw new RentalSystemException("Failed to archive customer: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Permanently delete a customer from the database.
-     * Removes the customer record completely from the Customers table.
-     * Returns true if deletion was successful, false if customer not found.
-     * Uses PreparedStatement to prevent SQL injection.
-     *
-     * Sample console flow:
-     * - Success: "Customer abc-123 permanently deleted."
-     * - Not found: "Customer abc-123 not found."
-     */
-        /**
-     * Permanently delete a customer from the database.
-     * Removes the customer record from the Customer table and also deletes the
-     * associated Person record (the super‑type). Both deletions are performed
-     * within a single transaction so that the database remains consistent.
-     * Returns true only if both rows were deleted.
+     * Soft-deletes a customer by setting is_active = 0.
+     * The Person and Customer rows remain in the database so that
+     * historical rental and report records keep their FK reference intact.
+     * Returns true if a row was updated, false if customer not found.
      */
     public boolean deleteCustomer(String customerID) throws RentalSystemException {
-        String deleteCustomerSql = "DELETE FROM Customer WHERE personID = ?";
-        String deletePersonSql   = "DELETE FROM Person   WHERE personID = ?";
-
-        try (Connection conn = getConn()) {
-            conn.setAutoCommit(false);
-            try (PreparedStatement psCust   = conn.prepareStatement(deleteCustomerSql);
-                 PreparedStatement psPerson = conn.prepareStatement(deletePersonSql)) {
-
-                psCust.setString(1, customerID);
-                int custRows = psCust.executeUpdate();
-
-                psPerson.setString(1, customerID);
-                int personRows = psPerson.executeUpdate();
-
-                conn.commit();
-                return custRows > 0 && personRows > 0;
-            } catch (SQLException e) {
-                conn.rollback();
-                throw new RentalSystemException("Failed to delete customer: " + e.getMessage(), e);
-            } finally {
-                conn.setAutoCommit(true);
+        String checkSql = "SELECT COUNT(*) FROM Rentals WHERE personID = ? AND return_date IS NULL";
+        try (PreparedStatement ps = getConn().prepareStatement(checkSql)) {
+            ps.setString(1, customerID);
+            try (var rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new RentalSystemException(
+                        "Cannot delete customer: customer has active rentals. Return all vehicles first.");
+                }
             }
         } catch (SQLException e) {
-            throw new RentalSystemException("Database error while deleting customer: " + e.getMessage(), e);
+            throw new RentalSystemException("Failed to check customer rentals: " + e.getMessage(), e);
+        }
+
+        String sql = "UPDATE Customer SET is_active = 0 WHERE personID = ? AND is_active = 1";
+        try (PreparedStatement ps = getConn().prepareStatement(sql)) {
+            ps.setString(1, customerID);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RentalSystemException("Failed to soft-delete customer: " + e.getMessage(), e);
         }
     }
 }

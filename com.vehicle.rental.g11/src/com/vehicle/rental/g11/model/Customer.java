@@ -7,14 +7,20 @@ public class Customer {
     private String lastName;
     private String suffix;
     private String email;
+    private boolean isActive;
 
     public Customer(String customerID, String firstName, String middleName, String lastName, String suffix, String email) {
+        this(customerID, firstName, middleName, lastName, suffix, email, true);
+    }
+
+    public Customer(String customerID, String firstName, String middleName, String lastName, String suffix, String email, boolean isActive) {
         this.customerID = customerID;
         this.firstName = firstName;
         this.middleName = middleName;
         this.lastName = lastName;
         this.suffix = suffix;
         this.email = email;
+        this.isActive = isActive;
     }
 
     public String getCustomerID() { return customerID; }
@@ -34,4 +40,7 @@ public class Customer {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
 }

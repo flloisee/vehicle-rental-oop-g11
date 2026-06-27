@@ -56,6 +56,7 @@ DROP TABLE IF EXISTS `Customer`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Customer` (
   `personID` varchar(36) NOT NULL,
+  `is_active` tinyint NOT NULL DEFAULT '1',
   PRIMARY KEY (`personID`),
   CONSTRAINT `customer_person_fk` FOREIGN KEY (`personID`) REFERENCES `Person` (`personID`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -87,7 +88,7 @@ DROP TABLE IF EXISTS `Rentals`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Rentals` (
   `rentalID` int NOT NULL AUTO_INCREMENT,
-  `personID` varchar(36) NOT NULL,
+  `personID` varchar(36) DEFAULT NULL,
   `vehicleID` int NOT NULL,
   `rental_date` date NOT NULL,
   `planned_return_date` date NOT NULL,
@@ -96,7 +97,7 @@ CREATE TABLE `Rentals` (
   PRIMARY KEY (`rentalID`),
   KEY `rental-customer_idx` (`personID`),
   KEY `rental-vehicle_idx` (`vehicleID`),
-  CONSTRAINT `rental-customer` FOREIGN KEY (`personID`) REFERENCES `Customer` (`personID`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `rental-customer` FOREIGN KEY (`personID`) REFERENCES `Customer` (`personID`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `rental-vehicle` FOREIGN KEY (`vehicleID`) REFERENCES `Vehicles` (`vehicleID`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

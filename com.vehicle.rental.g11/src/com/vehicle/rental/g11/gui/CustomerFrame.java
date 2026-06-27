@@ -367,14 +367,14 @@ customerTable = new JTable(tableModel) {
 
         deleteButton.addActionListener(e -> {
             if (selectedCustomerID == null) {
-                JOptionPane.showMessageDialog(this, "Please select a customer to permanently delete.",
+                JOptionPane.showMessageDialog(this, "Please select a customer to delete.",
                                               "Selection Required", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
             int confirm = JOptionPane.showConfirmDialog(this,
-                "Are you sure you want to PERMANENTLY DELETE this customer?\nThis action cannot be undone!",
-                "Confirm Permanent Delete", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+                "Are you sure you want to delete this customer?",
+                "Confirm Deletion", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
             if (confirm != JOptionPane.YES_OPTION) {
                 return;
@@ -383,13 +383,13 @@ customerTable = new JTable(tableModel) {
             try {
                 com.vehicle.rental.g11.dao.CustomerDAO dao = new com.vehicle.rental.g11.dao.CustomerDAO();
                 if (dao.deleteCustomer(selectedCustomerID)) {
-                    JOptionPane.showMessageDialog(this, "Customer permanently deleted successfully!",
-                                                  "Delete Success", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Customer deleted successfully!",
+                                                  "Deletion Success", JOptionPane.INFORMATION_MESSAGE);
                     clearForm();
                     loadCustomers();
                 } else {
                     JOptionPane.showMessageDialog(this, "Failed to delete customer. (Customer not found)",
-                                                  "Delete Failed", JOptionPane.WARNING_MESSAGE);
+                                                  "Deletion Failed", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (com.vehicle.rental.g11.exception.RentalSystemException ex) {
                 JOptionPane.showMessageDialog(this, "Error deleting customer: " + ex.getMessage(),
