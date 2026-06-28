@@ -29,3 +29,6 @@ AGENTS.md
 .env.*
 !.env.example
 AGENTS.md
+docs/class-diagram.pdf
+docs/class-diagram.png
+docs/class-diagram.puml
