@@ -323,7 +323,7 @@ customerTable = new JTable(tableModel) {
                 com.vehicle.rental.g11.model.Customer customer = new com.vehicle.rental.g11.model.Customer(
                     null, fName, mName, lName, suffix, email
                 );
-                if (dao.addCustomer(customer, null)) {
+                if (dao.addCustomer(customer)) {
                     JOptionPane.showMessageDialog(this, "Customer added successfully!");
                     clearForm();
                     loadCustomers();
