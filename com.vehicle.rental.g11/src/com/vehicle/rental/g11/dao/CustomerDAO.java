@@ -19,7 +19,7 @@ public class CustomerDAO {
     }
 
     // ----------- ADD -----------
-    public boolean addCustomer(Customer customer, String plainPassword) throws RentalSystemException {
+    public boolean addCustomer(Customer customer) throws RentalSystemException {
         // Insert into Person table (holds personal data)
         String personSql = "INSERT INTO Person (personID, first_name, middle_initial, last_name, suffix, email) "
                         + "VALUES (?, ?, ?, ?, ?, ?)";
